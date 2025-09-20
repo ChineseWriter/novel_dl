@@ -32,23 +32,24 @@ class BookItem(scrapy.Item):
     书籍信息的 Item 模型, 用于存储书籍的基本信息和元数据.
     """
     # 以下为必填字段, 爬虫必须提供这些信息.
-    title      = scrapy.Field(default="默认书籍名")   # 书籍名称
-    author     = scrapy.Field(default="默认作者")     # 书籍作者
-    state      = scrapy.Field(default="未知")        # 书籍的状态
-    desc       = scrapy.Field(default="默认书籍简介") # 书籍的简介
-    source     = scrapy.Field(default=DEFAULT_URL)  # 书籍的来源
+    title      = scrapy.Field(default="Default Book")    # 书籍名称
+    author     = scrapy.Field(default="Default Author")  # 书籍作者
+    state      = scrapy.Field(default="Unknown")         # 书籍的状态
+    desc       = scrapy.Field(default="Default Desc")    # 书籍的简介
+    source     = scrapy.Field(default=DEFAULT_URL)       # 书籍的来源
     # 以下为可选字段, 爬虫可以根据需要提供.
-    other_info = scrapy.Field(default={})           # 书籍的其它信息
-    cover_urls = scrapy.Field(default=[])           # 书籍封面的 URL 列表
-    covers     = scrapy.Field(default=[])           # 书籍封面图片列表
+    other_info = scrapy.Field(default=None)              # 书籍的其它信息
+    cover_urls = scrapy.Field(default=None)              # 书籍封面的 URL 列表
+    covers     = scrapy.Field(default=None)              # 书籍封面图片列表
 
     def __repr__(self) -> str:
-        title = "未知书籍" if "title" not in self else self["title"]
-        author = "未知作者" if "author" not in self else self["author"]
+        title  = "Unknown" if ("title"  not in self) else self["title"]
+        author = "Unknown" if ("author" not in self) else self["author"]
         return f"<BookItem title={title} author={author}>"
 
     @property
     def book_hash(self) -> str:
+        """获取书籍的唯一哈希值, 由书名和作者生成."""
         return hash_(f"{self["title"]} - {self["author"]}")
 
 
@@ -58,18 +59,20 @@ class ChapterItem(scrapy.Item):
     章节信息的 Item 模型, 用于存储章节的基本信息和内容.
     """
     # 以下为必填字段, 爬虫必须提供这些信息.
-    book_hash   = scrapy.Field(default="0"*64)        # 章节所属书籍的哈希值
-    index       = scrapy.Field(default=-1)            # 章节的索引
-    title       = scrapy.Field(default="默认章节名")    # 章节的标题
-    content     = scrapy.Field(default="默认章节内容")  # 章节的内容
-    source      = scrapy.Field(default=DEFAULT_URL)   # 章节的来源 URL
+    book_hash   = scrapy.Field(default="0"*64)               # 章节所属书籍的哈希值
+    index       = scrapy.Field(default=-1)                   # 章节的索引
+    title       = scrapy.Field(default="Default Chapter")    # 章节的标题
+    content     = scrapy.Field(default="Default Content")    # 章节的内容
+    source      = scrapy.Field(default=DEFAULT_URL)          # 章节的来源 URL
     # 以下为可选字段, 爬虫可以根据需要提供.
-    update_time = scrapy.Field(default=0.0)           # 章节的更新时间
-    other_info  = scrapy.Field(default={})            # 章节的其它信息
+    update_time = scrapy.Field(default=0.0)                  # 章节的更新时间
+    other_info  = scrapy.Field(default=None)                   # 章节的其它信息
 
     def __repr__(self) -> str:
-        index = self["index"] if "index" in self else -1
-        title = self["title"] if "title" in self else "未知章节"
-        content_length = len(self["content"]) if "content" in self else 0
+        # 检查所需要显示的字段是否存在, 若不存在则使用默认值.
+        index = self["index"] if ("index" in self) else -1
+        title = self["title"] if ("title" in self) else "Unknown"
+        content_length = len(self["content"]) if ("content" in self) else 0
+        # 返回格式化的字符串表示
         return f"<ChapterItem index={index} title={title} " \
             f"content_length={content_length}>"
