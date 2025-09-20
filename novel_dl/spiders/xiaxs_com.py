@@ -8,11 +8,10 @@
 import re
 from collections.abc import Iterable
 
-from scrapy.http import Response, Request
+from scrapy.http import Request, Response
 
 from novel_dl.items import BookItem, ChapterItem
 from novel_dl.loaders.xiaxs_com import BookItemLoader, ChapterItemLoader
-
 from novel_dl.templates import GeneralSpider
 
 
@@ -21,17 +20,17 @@ class XiaxsSpider(GeneralSpider):
     domain = "www.xiaxs.com"
     book_url_pattern = re.compile(r"^/xs/\d+\/$")
     chapter_url_pattern = re.compile(r"^/xs/\d+/\d+\.html$")
-    
+
     custom_settings = {
         "RETRY_HTTP_CODES": [500, 502, 503, 504, 408, 403, 404, 523, 520]
     }
-    
+
     def get_book_info(self, response: Response) -> BookItem | None:
         html = response.xpath("/*")
         if len(html) != 1:
             self.logger.error("在该次请求中没有找到 HTML 元素")
             return None
-        
+
         loader = BookItemLoader(
             item=BookItem(), selector=html[0]
         )
@@ -51,7 +50,7 @@ class XiaxsSpider(GeneralSpider):
         loader.add_xpath("desc", '//*[@id="intro"]/text()')
         loader.add_value("source", response.url)
         item = loader.load_item()
-        
+
         if item["cover_urls"]:
             item["cover_urls"] = \
                 [
@@ -59,7 +58,7 @@ class XiaxsSpider(GeneralSpider):
                     response.follow_all(item["cover_urls"])
                 ]
         return item
-    
+
     def get_chapter_list(
         self, response: Response, book: BookItem
     ) -> Iterable[Request] | None:
@@ -67,7 +66,7 @@ class XiaxsSpider(GeneralSpider):
             '//div[@class="listmain"]/dl/dt[2]'
             '/following-sibling::dd/a/@href'
         ).getall()
-        
+
         for index, url in enumerate(href_list):
             yield response.follow(
                 url, self.get_chapter_info,
@@ -76,7 +75,7 @@ class XiaxsSpider(GeneralSpider):
                     "book_hash": book.book_hash
                 }
             )
-    
+
     def get_chapter_info(
         self, response: Response
     ) -> ChapterItem | None:
@@ -84,7 +83,7 @@ class XiaxsSpider(GeneralSpider):
         if len(html) != 1:
             self.logger.error("在该次请求中没有找到 HTML 元素")
             return None
-        
+
         loader = ChapterItemLoader(
             item=ChapterItem(), selector=html[0]
         )
@@ -94,10 +93,9 @@ class XiaxsSpider(GeneralSpider):
         loader.add_xpath("content", '//*[@id="content"]')
         loader.add_value("source", response.url)
         item = loader.load_item()
-        
+
         self.logger.debug(
             f"获取到章节信息：{item.get('index', 0)}."
             f"{item.get('title', '未知章节')}"
         )
         return item
-        
