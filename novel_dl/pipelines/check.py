@@ -3,10 +3,7 @@
 # @FileName: check.py
 # @Time: 30/07/2025 11:26
 # @Author: Amundsen Severus Rubeus Bjaaland
-"""
-# Check
-该管道用于对爬取到的 BookItem 和 ChapterItem 进行有效性和完整性检查.
-"""
+"""该管道用于对爬取到的 BookItem 和 ChapterItem 进行有效性和完整性检查."""
 
 
 # 导入标准库

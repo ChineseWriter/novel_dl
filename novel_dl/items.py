@@ -3,9 +3,7 @@
 # @FileName: items.py
 # @Time: 14/07/2025 09:59
 # @Author: Amundsen Severus Rubeus Bjaaland
-"""
-# novel_dl.items
-这是 novel_dl 项目的 Item 模型文件, 用于定义爬虫项目中使用的 Item 模型.
+"""这是 novel_dl 项目的 Item 模型文件, 用于定义爬虫项目中使用的 Item 模型.
 
 ## Item 模型
 1. BookItem: 用于存储书籍的基本信息和元数据.
@@ -27,10 +25,8 @@ DEFAULT_URL = "https://example.com"
 
 
 class BookItem(scrapy.Item):
-    """
-    # BookItem
-    书籍信息的 Item 模型, 用于存储书籍的基本信息和元数据.
-    """
+    """书籍信息的 Item 模型, 用于存储书籍的基本信息和元数据."""
+
     # 以下为必填字段, 爬虫必须提供这些信息.
     title      = scrapy.Field(default="Default Book")    # 书籍名称
     author     = scrapy.Field(default="Default Author")  # 书籍作者
@@ -43,8 +39,10 @@ class BookItem(scrapy.Item):
     covers     = scrapy.Field(default=None)              # 书籍封面图片列表
 
     def __repr__(self) -> str:
-        title  = "Unknown" if ("title"  not in self) else self["title"]
-        author = "Unknown" if ("author" not in self) else self["author"]
+        # 检查所需要显示的字段是否存在, 若不存在则使用默认值.
+        title  = self.get("title", "Unknown")
+        author = self.get("author", "Unknown")
+        # 返回格式化的字符串表示
         return f"<BookItem title={title} author={author}>"
 
     @property
@@ -54,10 +52,8 @@ class BookItem(scrapy.Item):
 
 
 class ChapterItem(scrapy.Item):
-    """
-    # ChapterItem
-    章节信息的 Item 模型, 用于存储章节的基本信息和内容.
-    """
+    """章节信息的 Item 模型, 用于存储章节的基本信息和内容."""
+
     # 以下为必填字段, 爬虫必须提供这些信息.
     book_hash   = scrapy.Field(default="0"*64)               # 章节所属书籍的哈希值
     index       = scrapy.Field(default=-1)                   # 章节的索引
@@ -66,13 +62,13 @@ class ChapterItem(scrapy.Item):
     source      = scrapy.Field(default=DEFAULT_URL)          # 章节的来源 URL
     # 以下为可选字段, 爬虫可以根据需要提供.
     update_time = scrapy.Field(default=0.0)                  # 章节的更新时间
-    other_info  = scrapy.Field(default=None)                   # 章节的其它信息
+    other_info  = scrapy.Field(default=None)                 # 章节的其它信息
 
     def __repr__(self) -> str:
         # 检查所需要显示的字段是否存在, 若不存在则使用默认值.
-        index = self["index"] if ("index" in self) else -1
-        title = self["title"] if ("title" in self) else "Unknown"
-        content_length = len(self["content"]) if ("content" in self) else 0
+        index = self.get("index", -1)
+        title = self.get("title", "Unknown")
+        content_length = len(self.get("content", ""))
         # 返回格式化的字符串表示
         return f"<ChapterItem index={index} title={title} " \
             f"content_length={content_length}>"

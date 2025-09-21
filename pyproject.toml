@@ -1,19 +1,46 @@
+[tool.pylint.messages_control]
+disable = [                   # 要禁用的消息代码或名称的列表
+    "C0321",                      # 单行多条语句
+]
+
 [tool.ruff]
-target-version = "py312"  # 要定位的最低 Python 版本
-line-length = 119         # 强制执行长行违规时使用的行长度
-indent-width = 4          # 每个缩进级别（制表符）的空格数
+target-version = "py312"      # 要定位的最低 Python 版本
+line-length = 119             # 强制执行长行违规时使用的行长度
+indent-width = 4              # 每个缩进级别（制表符）的空格数
 
 [tool.ruff.lint]
-# 要忽略的规则代码或前缀的列表
-ignore = ["E701"]  # "I001", "W293"
-select = [                        # 要启用的规则代码或 prefix 列表
-    "F", "E", "W", "I",
-    "N", "PL", "PERF", "RUF"
+ignore = [                    # 要忽略的规则代码或前缀的列表
+    "E701",                       # 单行多条语句
+    "D105",                       # 类的魔法方法缺少 docstring
+]  # "I001", "W293"
+select = [                    # 要启用的规则代码或 prefix 列表
+    # 以下是基础规则集
+    "I",                          # 导入检查
+    "N",                          # 命名约定检查
+    "PERF",                       # 性能反模式检查
+    "E", "W",                     # PEP 8 风格检查
+    "D",                          # 文档字符串检查
+    "F",                          # 基础检查
+    "PL",                         # pylint 兼容规则
+    "RUF",                        # Ruff 特有规则
+    "TRY",                        # 防止 Python 中的异常处理反模式
+    # 以下是 Flake 8 规则集
+    "ANN",                        # 类型注解检查
+    "ASYNC",                      # 异步编程检查
+    "FBT",                        # 布尔陷阱检查
+    "B",                          # 常见 Bug 检查
+    "A",                          # 遮蔽检查
+    "COM",                        # 逗号相关检查
+    "C4",                         # 推导式检查
+    "Q",                          # 引号相关检查
+    "RET",                        # return 语句检查
+    "SIM",                        # 代码简化检查
+    "TC",                         # 类型检查
+    "PTH",                        # 路径相关检查
 ]
 
 [tool.ruff.lint.isort]
-# 在导入后放置的空行数
-lines-after-imports = 2
+lines-after-imports = 2       # 在导入后放置的空行数
 
 [tool.ruff.format]
 docstring-code-format = true      # 是否格式化文档字符串中的代码片段
