@@ -3,45 +3,32 @@
 # @FileName: templates.py
 # @Time: 19/07/2025 15:31
 # @Author: Amundsen Severus Rubeus Bjaaland
+"""该模块定义了通用的爬虫模板和 ItemLoader 模板, 用于减少编写具体 Spider 的代码量."""
 
 
 # 导入标准库
 import re
+from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator, Iterable
 from enum import Enum
 from urllib.parse import urlparse
-from abc import ABC, abstractmethod
-from collections.abc import Iterable, AsyncGenerator
+
 # 导入第三方库
-from scrapy import Spider
 from itemloaders import ItemLoader
-from scrapy.http import Response, Request
-from itemloaders.processors import TakeFirst, Identity, MapCompose
+from itemloaders.processors import Identity, MapCompose, TakeFirst
+from scrapy import Spider
+from scrapy.http import Request, Response
+
 # 导入自定义库: 自定义的 Scrapy 的 Item 类
 from novel_dl.items import BookItem, ChapterItem
+
 # 导入自定义库: 字符串规范化方法
 from novel_dl.utils.str_deal import add_tab
 
 
 class GeneralSpider(Spider, ABC):
-    """
-    # GeneralSpider
-    这是一个通用的 Scrapy 爬虫模板类, 用于定义基本的爬虫结构和方法.
-    
-    ## 属性
-    - name: str
-        爬取的网站的名称, 用于 Scrapy 框架识别.
-    - domain: str
-        爬虫目标网站的域名, 用于构建请求 URL.
-    - book_url_pattern: re.Pattern | None
-        用于匹配书籍详情页的 URL 模式, 如果为 None 则
-        爬虫不会处理书籍详情页.
-    - chapter_url_pattern: re.Pattern | None
-        用于匹配章节详情页的 URL 模式, 如果为 None 则
-        爬虫不会处理章节详情页.
-    - Mode: Enum
-        枚举类, 定义爬虫的运行模式, 包括列表模式和书籍模式.
-    """
-    
+    """这是一个通用的 Scrapy 爬虫模板类, 用于定义基本的爬虫结构和方法."""
+
     # 爬取的网站的名称
     name = "默认网站名"
     # 爬取的网站的域名
@@ -50,12 +37,10 @@ class GeneralSpider(Spider, ABC):
     book_url_pattern = re.compile(r"^/book/\d+/$")
     # 网站的章节详情页 URL 模式
     chapter_url_pattern = re.compile(r"^/book/\d+/chapter/\d+\.html$")
-    
+
     class Mode(Enum):
-        """
-        # Mode
-        枚举类, 定义爬虫的运行模式.
-        
+        """枚举类, 定义爬虫的运行模式.
+
         ## 成员
         - LIST: (1, "list")
             列表模式, 爬虫将从网站的首页开始爬取,
@@ -64,14 +49,15 @@ class GeneralSpider(Spider, ABC):
             书籍模式, 爬虫将直接爬取指定的书籍链接,
             并获取书籍的详细信息和章节列表.
         """
+
         # 列表模式
         LIST = (1, "list")
         # 书籍模式
         BOOK = (2, "book")
-    
+
     def __init__(
         self, novel_url: str = "",
-        load_all: bool = False, *args, **kwargs
+        load_all: bool = False, *args, **kwargs,
     ):
         """
         # __init__

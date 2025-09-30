@@ -1,14 +1,50 @@
 [tool.ruff]
-target-version = "py312"  # 要定位的最低 Python 版本
-line-length = 119         # 强制执行长行违规时使用的行长度
-indent-width = 4          # 每个缩进级别（制表符）的空格数
+target-version = "py312"              # 要定位的最低 Python 版本
+line-length = 119                     # 强制执行长行违规时使用的行长度
+indent-width = 4                      # 每个缩进级别（制表符）的空格数
 
 [tool.ruff.lint]
-# 要忽略的规则代码或前缀的列表
-ignore = []  # "I001", "E701", "W293"
+ignore = [                        # 要忽略的规则代码或前缀的列表
+    "D105",                           # 魔法方法缺少 docstring
+    "N817",                           # 将驼峰命名法的变量导入为全大写首字母
+]  # "I001", "E701", "W293"
 select = [                        # 要启用的规则代码或 prefix 列表
-    "F", "E", "W", "I",
-    "N", "PL", "PERF", "RUF"
+    # 以下为基础规则
+    "I",                              # 导入排序
+    "N",                              # PEP 8 命名规范
+    "PERF",                           # 性能反模式
+    "E", "W",                         # 常见错误和警告
+    "DOC",                            # 文档字符串规范
+    "D",                              # 文档字符串检查
+    "F",                              # PyFlakes 规则
+    "PL",                             # Pylint 规则
+    "RUF",                            # Ruff 自身的规则
+    # 以下为 Flake 8 及衍生插件的规则
+    "YTT",                            # 基础 Flake8 规则
+    "ANN",                            # 类型注释
+    "ASYNC",                          # 异步漏洞
+    "S",                              # 安全漏洞
+    "BLE",                            # 异常捕获规范
+    "FBT",                            # 布尔陷阱
+    "B",                              # 常见 Bug
+    "A",                              # 变量遮蔽
+    "COM",                            # 尾随逗号规范
+    "C4",                             # 常见迭代对象
+    "CPY",                            # 版权声明
+    "DTZ",                            # 日期模块
+    "FIX",                            # 问题修复
+    "ISC",                            # 字符串连接规范
+    "ICN",                            # 导入规范
+    "LOG",                            # 日志记录器使用规范
+    "PIE",                            # 不必要的成分
+    "PT",                             # PyTest 包使用规范
+    "Q",                              # 引号规范
+    "RSE",                            # 异常抛出规范
+    "RET",                            # 返回语句规范
+    "SIM",                            # 简化代码
+    "TC",                             # 类型检查
+    "ARG",                            # 未使用的成分
+    "PTH",                            # PathLib 使用规范
 ]
 
 [tool.ruff.lint.isort]

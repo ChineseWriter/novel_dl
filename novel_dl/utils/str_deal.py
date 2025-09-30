@@ -38,17 +38,6 @@ def normalize_book_status(status: str) -> str:
     else:                       return "未知"
 
 
-def hash_(text: str) -> str:
-    """
-    计算字符串的 SHA3-256 哈希值
-    
-    :param text: 输入文本
-    :return: 文本的 SHA3-256 哈希值
-    """
-    return hashlib.sha3_256(
-        text.encode("UTF-8")
-    ).hexdigest()
-
 def add_tab(text: str) -> str:
     """
     若行首没有制表符, 则添加制表符缩进

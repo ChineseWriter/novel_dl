@@ -3,14 +3,7 @@
 # @FileName: items.py
 # @Time: 14/07/2025 09:59
 # @Author: Amundsen Severus Rubeus Bjaaland
-"""
-# novel_dl.items
-这是 novel_dl 项目的 Item 模型文件, 用于定义爬虫项目中使用的 Item 模型.
-
-## Item 模型
-1. BookItem: 用于存储书籍的基本信息和元数据.
-2. ChapterItem: 用于存储章节的基本信息和内容.
-"""
+"""这是 novel_dl 项目的 Item 模型文件, 用于定义爬虫项目中使用的 Item 模型."""
 # 在此定义爬虫项目的 Item 模型, 文档请见:
 # https://docs.scrapy.org/en/latest/topics/items.html
 
@@ -18,19 +11,14 @@
 # 导入第三方库
 import scrapy
 
-# 导入自定义库
-from novel_dl.utils.str_deal import hash_
-
 
 # 设置默认的源 URL, 用于爬虫未指定源时的默认值.
 DEFAULT_URL = "https://example.com"
 
 
 class BookItem(scrapy.Item):
-    """
-    # BookItem
-    书籍信息的 Item 模型, 用于存储书籍的基本信息和元数据.
-    """
+    """书籍信息的 Item 模型, 用于存储书籍的基本信息和元数据."""
+
     # 以下为必填字段, 爬虫必须提供这些信息.
     title      = scrapy.Field(default="Default Book")    # 书籍名称
     author     = scrapy.Field(default="Default Author")  # 书籍作者
@@ -43,21 +31,28 @@ class BookItem(scrapy.Item):
     covers     = scrapy.Field(default=None)              # 书籍封面图片列表
 
     def __repr__(self) -> str:
-        title  = "Unknown" if ("title"  not in self) else self["title"]
-        author = "Unknown" if ("author" not in self) else self["author"]
+        title  = self.get("title", "Unknown")
+        author = self.get("author", "Unknown")
         return f"<BookItem title={title} author={author}>"
 
-    @property
-    def book_hash(self) -> str:
-        """获取书籍的唯一哈希值, 由书名和作者生成."""
-        return hash_(f"{self["title"]} - {self["author"]}")
+    @staticmethod
+    def default() -> "BookItem":
+        """返回一个具有默认值的 BookItem 实例."""
+        return BookItem(
+            title="Default Book",
+            author="Default Author",
+            state="Unknown",
+            desc="Default Desc",
+            source=DEFAULT_URL,
+            other_info=None,
+            cover_urls=None,
+            covers=None,
+        )
 
 
 class ChapterItem(scrapy.Item):
-    """
-    # ChapterItem
-    章节信息的 Item 模型, 用于存储章节的基本信息和内容.
-    """
+    """章节信息的 Item 模型, 用于存储章节的基本信息和内容."""
+
     # 以下为必填字段, 爬虫必须提供这些信息.
     book_hash   = scrapy.Field(default="0"*64)               # 章节所属书籍的哈希值
     index       = scrapy.Field(default=-1)                   # 章节的索引
@@ -70,9 +65,22 @@ class ChapterItem(scrapy.Item):
 
     def __repr__(self) -> str:
         # 检查所需要显示的字段是否存在, 若不存在则使用默认值.
-        index = self["index"] if ("index" in self) else -1
-        title = self["title"] if ("title" in self) else "Unknown"
+        index = self.get("index", -1)
+        title = self.get("title", "Unknown")
         content_length = len(self["content"]) if ("content" in self) else 0
         # 返回格式化的字符串表示
-        return f"<ChapterItem index={index} title={title} " \
-            f"content_length={content_length}>"
+        return (f"<ChapterItem index={index} title={title} "
+            f"content_length={content_length}>")
+
+    @staticmethod
+    def default() -> "ChapterItem":
+        """返回一个具有默认值的 ChapterItem 实例."""
+        return ChapterItem(
+            book_hash="0"*64,
+            index=-1,
+            title="Default Chapter",
+            content="Default Content",
+            source=DEFAULT_URL,
+            update_time=0.0,
+            other_info=None,
+        )
