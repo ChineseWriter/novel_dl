@@ -3,7 +3,7 @@
 ## 2025.09.30
 
 1. [ ] 依据 Ruff 检查项目, 并小幅度调整项目结构和基础模块的功能.
-   - [ ] items 模块.
+   - [x] items 模块.
    - [ ] templates 模块.
    - [ ] spiders 模块.
    - [ ] pipelines 模块.
