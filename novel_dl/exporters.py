@@ -16,8 +16,8 @@ from ebooklib import epub
 from scrapy.exporters import BaseItemExporter
 
 # 导入自定义库: 用于类型标注
-from novel_dl.items import BookItem, ChapterItem
-from novel_dl.obj import Book
+from novel_dl.entity.items import BookItem, ChapterItem
+from novel_dl.entity.base import Book
 
 # 导入自定义库: 用于类型转换
 from novel_dl.utils.convert import item_to_book, item_to_chapter

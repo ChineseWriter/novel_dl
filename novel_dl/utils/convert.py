@@ -9,10 +9,10 @@
 import os
 from typing import Iterable
 # 导入自定义库: 用于类型转换
-from novel_dl.items import ChapterItem, BookItem
-from novel_dl.obj import Cover, Chapter, Book
-from novel_dl.models import CoverTable, ChapterTable, ContentTable
-from novel_dl.models import BookTable, ExtraInfoTable
+from novel_dl.entity.items import ChapterItem, BookItem
+from novel_dl.entity.base import Cover, Chapter, Book
+from novel_dl.entity.models import CoverTable, ChapterTable, ContentTable
+from novel_dl.entity.models import BookTable, ExtraInfoTable
 # 导入自定义库: 用于读取文件
 from novel_dl.settings import IMAGES_STORE
 

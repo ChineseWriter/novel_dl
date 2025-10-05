@@ -16,10 +16,10 @@ from collections import defaultdict
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 # 导入自定义库: 数据库基础类
-from novel_dl.models import Base
+from novel_dl.entity.models import Base
 # 导入自定义库: 用于类型标注
-from novel_dl.items import BookItem, ChapterItem
-from novel_dl.models import BookTable, ChapterTable, ContentTable
+from novel_dl.entity.items import BookItem, ChapterItem
+from novel_dl.entity.models import BookTable, ChapterTable, ContentTable
 # 导入自定义库: 用于类型转换
 from novel_dl.utils.convert import item_to_book, item_to_chapter
 from novel_dl.utils.convert import book_to_record, chapter_to_record

@@ -9,7 +9,7 @@ import yaml
 
 from ebooklib import epub
 
-from ..obj import Book
+from ..entity.base import Book
 
 
 TEXT_CSS = "text/css"

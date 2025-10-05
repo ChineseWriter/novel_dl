@@ -11,8 +11,8 @@ import hashlib
 from typing import Union
 
 # 导入自定义库
-from novel_dl.items import BookItem, ChapterItem
-from novel_dl.obj import Book, Chapter
+from novel_dl.entity.items import BookItem, ChapterItem
+from novel_dl.entity.base import Book, Chapter
 
 
 # 定义支持的类型

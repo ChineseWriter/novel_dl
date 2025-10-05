@@ -3,16 +3,19 @@
 # @FileName: xiaxs_com.py
 # @Time: 30/06/2025 18:43
 # @Author: Amundsen Severus Rubeus Bjaaland
+"""xiaxs.com 小说爬虫."""
 
 
+# 导入标准库
 import re
 from collections.abc import Iterable
 
+# 导入第三方库
 from itemloaders.processors import MapCompose
 from scrapy.http import Request, Response
 
-from novel_dl.items import BookItem, ChapterItem
-from novel_dl.loaders.xiaxs_com import BookItemLoader, ChapterItemLoader
+# 导入自定义库
+from novel_dl.entity.items import BookItem, ChapterItem
 from novel_dl.templates import BookItemLoader as BIL
 from novel_dl.templates import ChapterItemLoader as CIL
 from novel_dl.templates import GeneralSpider
@@ -45,7 +48,7 @@ class BookItemLoader(BIL):
     state_in       = MapCompose(
         str.strip,
         get_text_after_colon,
-        normalize_book_status
+        normalize_book_status,
     )
 
 
@@ -63,70 +66,56 @@ class XiaxsSpider(GeneralSpider):
     domain = "www.xiaxs.com"
     book_url_pattern = re.compile(r"^/xs/\d+\/$")
     chapter_url_pattern = re.compile(r"^/xs/\d+/\d+\.html$")
-    
+
     custom_settings = {
-        "RETRY_HTTP_CODES": [500, 502, 503, 504, 408, 403, 404, 523, 520]
+        "RETRY_HTTP_CODES": [500, 502, 503, 504, 408, 403, 404, 523, 520],
     }
-    
+
     def get_book_info(self, response: Response) -> BookItem | None:
         html = response.xpath("/*")
         if len(html) != 1:
             self.logger.error("在该次请求中没有找到 HTML 元素")
             return None
-        
-        loader = BookItemLoader(
-            item=BookItem(), selector=html[0]
-        )
+
+        loader = BookItemLoader(item=BookItem(), selector=html[0])
         loader.add_xpath("title", "//h1/text()")
-        loader.add_xpath(
-            "author",
-            "/html/body/div[4]/div[1]/div[2]/div[2]/p[1]/a/text()"
-        )
-        loader.add_xpath(
-            "cover_urls",
-            "/html/body/div[4]/div[1]/div[2]/div[1]/img/@src"
-        )
-        loader.add_xpath(
-            "state",
-            "/html/body/div[4]/div[1]/div[2]/div[2]/p[2]/text()"
-        )
+        loader.add_xpath("author", "/html/body/div[4]/div[1]/div[2]/div[2]/p[1]/a/text()")
+        loader.add_xpath("cover_urls", "/html/body/div[4]/div[1]/div[2]/div[1]/img/@src")
+        loader.add_xpath("state", "/html/body/div[4]/div[1]/div[2]/div[2]/p[2]/text()")
         loader.add_xpath("desc", '//*[@id="intro"]/text()')
         loader.add_value("source", response.url)
         item = loader.load_item()
-        
+
         if item["cover_urls"]:
-            item["cover_urls"] = \
-                [
+            item["cover_urls"] = [
                     i.url for i in
                     response.follow_all(item["cover_urls"])
                 ]
         return item
-    
+
     def get_chapter_list(
-        self, response: Response, book: BookItem
+        self, response: Response, book: BookItem,
     ) -> Iterable[Request] | None:
         href_list = response.xpath(
             '//div[@class="listmain"]/dl/dt[2]'
-            '/following-sibling::dd/a/@href'
+            '/following-sibling::dd/a/@href',
         ).getall()
-        
+
         for index, url in enumerate(href_list):
             yield response.follow(
                 url, self.get_chapter_info,
                 meta={
                     "index": index + 1,
-                    "book_hash": book.book_hash
-                }
+                    "book_hash": book.book_hash,
+                },
             )
-    
-    def get_chapter_info(
-        self, response: Response
-    ) -> ChapterItem | None:
+
+    def get_chapter_info(self, response: Response) -> ChapterItem | None:
         html = response.xpath("/*")
         if len(html) != 1:
             self.logger.error("在该次请求中没有找到 HTML 元素")
             return None
-        
+
         loader = ChapterItemLoader(
             item=ChapterItem(), selector=html[0]
         )
@@ -136,10 +125,10 @@ class XiaxsSpider(GeneralSpider):
         loader.add_xpath("content", '//*[@id="content"]')
         loader.add_value("source", response.url)
         item = loader.load_item()
-        
+
         self.logger.debug(
-            f"获取到章节信息：{item.get('index', 0)}."
-            f"{item.get('title', '未知章节')}"
+            f"获取到章节信息: {item.get('index', 0)}."
+            f"{item.get('title', '未知章节')}",
         )
         return item
-        
+

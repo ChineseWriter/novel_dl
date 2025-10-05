@@ -20,7 +20,7 @@ from scrapy import Spider
 from scrapy.http import Request, Response
 
 # 导入自定义库
-from novel_dl.items import BookItem, ChapterItem
+from novel_dl.entity.items import BookItem, ChapterItem
 from novel_dl.utils.identify import hash_
 from novel_dl.utils.str_deal import add_tab
 

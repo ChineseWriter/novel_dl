@@ -13,7 +13,7 @@
 # 导入第三方库
 from scrapy.exceptions import DropItem
 # 导入自定义库
-from novel_dl.items import BookItem, ChapterItem
+from novel_dl.entity.items import BookItem, ChapterItem
 
 
 class CheckPipeline:

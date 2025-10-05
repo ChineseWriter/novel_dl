@@ -9,7 +9,7 @@
 """
 
 # 导入自定义库: 用于类型注解和判断
-from novel_dl.items import ChapterItem
+from novel_dl.entity.items import ChapterItem
 
 
 class VerifyPipeline:
