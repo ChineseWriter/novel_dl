@@ -64,6 +64,7 @@ class GeneralSpider(Spider, ABC):
             self.mode = self.Mode.BOOK
 
         # 记录在书籍模式下爬取的书籍的章节数.
+        self.chapter_list_flag: bool = False
         self.chapters_crawled: int | None = None
 
     async def start(self) -> AsyncGenerator[Request, None]:
@@ -89,11 +90,15 @@ class GeneralSpider(Spider, ABC):
 
         # 如果当前页面是书籍详情页, 则获取书籍信息.
         if self.book_url_pattern.match(urlparse(response.url).path):
-            book_info = self.get_book_info(response)
+            try: book_info = self.get_book_info(response)
+            except Exception as e:  # noqa: BLE001
+                self.logger.error(f"获取书籍信息时发生错误: {e}")
         # 如果书籍信息获取成功, 则获取章节列表并返回书籍信息.
         if book_info is not None:
             response.meta["book_hash"] = hash_(book_info)
-            chapter_list = self.__transform(response)
+            try: chapter_list = self.__transform(response)
+            except Exception as e:  # noqa: BLE001
+                self.logger.error(f"获取章节列表时发生错误: {e}")
             yield book_info
         # 如果章节列表获取成功, 则遍历章节列表并生成请求.
         if chapter_list is not None:
@@ -119,7 +124,10 @@ class GeneralSpider(Spider, ABC):
         ) -> Generator[Request | BookItem, None, None]:
         """解析书籍详情页, 获取书籍信息、封面和章节列表, 进一步获取章节信息."""
         # 获取书籍信息, 如果获取失败则返回 None.
-        book_info = self.get_book_info(response)
+        try: book_info = self.get_book_info(response)
+        except Exception as e:  # noqa: BLE001
+            self.logger.error(f"获取书籍信息时发生错误: {e}")
+            return None
         # 如果书籍信息获取失败, 则记录错误并返回.
         if book_info is None:
             self.logger.error("在该次请求中没有找到书籍信息!")
@@ -133,7 +141,10 @@ class GeneralSpider(Spider, ABC):
 
         # 获取章节列表, 如果获取失败则返回 None.
         response.meta["book_hash"] = hash_(book_info)
-        chapter_list = self.__transform(response)
+        try: chapter_list = self.__transform(response)
+        except Exception as e:  # noqa: BLE001
+            self.logger.error(f"获取章节列表时发生错误: {e}")
+            return None
         # 如果章节列表获取失败, 则记录错误并返回.
         if chapter_list is None:
             self.logger.error("在该次请求中没有找到章节列表!")
@@ -151,6 +162,8 @@ class GeneralSpider(Spider, ABC):
         result = self.get_chapter_list(response)
         # 如果章节列表获取失败, 则返回 None.
         if result is None: return None
+
+        flag: bool = True
         # 遍历章节列表, 生成章节请求.
         for i in result:
             # 如果章节链接匹配章节详情页模式, 则生成章节请求.
@@ -159,11 +172,15 @@ class GeneralSpider(Spider, ABC):
                 request = response.follow(i, self.get_chapter_info, priority=5)
             # 否则, 递归调用 __transform 方法处理新的章节列表请求.
             else:
+                flag = False
                 request = response.follow(i, self.__transform, priority=10)
             # 确保章节请求携带书籍哈希值.
             request.meta["book_hash"] = response.meta["book_hash"]
             # 返回章节请求, 准备发送请求.
             yield request
+
+        if flag:
+            self.chapter_list_flag = True
 
     @abstractmethod
     def get_book_info(self, response: Response) -> BookItem | None:
