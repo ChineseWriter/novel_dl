@@ -3,10 +3,7 @@
 # @FileName: obj.py
 # @Time: 08/08/2025 12:16
 # @Author: Amundsen Severus Rubeus Bjaaland
-"""
-# obj
-自定义对象类, 用于存储书籍、章节和封面等信息.
-"""
+"""自定义对象类, 用于存储书籍、章节和封面等信息."""
 
 
 # 导入标准库

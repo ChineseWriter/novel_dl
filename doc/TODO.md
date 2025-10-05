@@ -4,7 +4,7 @@
 
 1. [ ] 依据 Ruff 检查项目, 并小幅度调整项目结构和基础模块的功能.
    - [x] items 模块.
-   - [ ] templates 模块.
+   - [x] templates 模块.
    - [ ] spiders 模块.
    - [ ] pipelines 模块.
    - [ ] obj 模块.

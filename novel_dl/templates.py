@@ -19,10 +19,9 @@ from itemloaders.processors import Identity, MapCompose, TakeFirst
 from scrapy import Spider
 from scrapy.http import Request, Response
 
-# 导入自定义库: 自定义的 Scrapy 的 Item 类
+# 导入自定义库
 from novel_dl.items import BookItem, ChapterItem
-
-# 导入自定义库: 字符串规范化方法
+from novel_dl.utils.identify import hash_
 from novel_dl.utils.str_deal import add_tab
 
 
@@ -64,6 +63,9 @@ class GeneralSpider(Spider, ABC):
             self.start_url = novel_url
             self.mode = self.Mode.BOOK
 
+        # 记录在书籍模式下爬取的书籍的章节数.
+        self.chapters_crawled: int | None = None
+
     async def start(self) -> AsyncGenerator[Request, None]:
         """爬虫的入口点, 根据爬虫的运行模式决定起始请求以及回调函数."""
         # 根据爬虫的运行模式决定起始请求的处理方式
@@ -90,13 +92,12 @@ class GeneralSpider(Spider, ABC):
             book_info = self.get_book_info(response)
         # 如果书籍信息获取成功, 则获取章节列表并返回书籍信息.
         if book_info is not None:
-            chapter_list = self.get_chapter_list(response, book_info)
+            response.meta["book_hash"] = hash_(book_info)
+            chapter_list = self.__transform(response)
             yield book_info
         # 如果章节列表获取成功, 则遍历章节列表并生成请求.
         if chapter_list is not None:
-            for chapter_request in chapter_list:
-                chapter_request.priority = 5
-                yield chapter_request
+            yield from chapter_list
 
         # 通过 CSS 选择器获取所有链接.
         all_urls = response.css("a::attr(href)").getall()
@@ -131,15 +132,38 @@ class GeneralSpider(Spider, ABC):
         yield book_info
 
         # 获取章节列表, 如果获取失败则返回 None.
-        chapter_list = self.get_chapter_list(response, book_info)
+        response.meta["book_hash"] = hash_(book_info)
+        chapter_list = self.__transform(response)
         # 如果章节列表获取失败, 则记录错误并返回.
         if chapter_list is None:
             self.logger.error("在该次请求中没有找到章节列表!")
             return None
-        # 将 chapter_list 转为列表以便多次使用.
-        chapter_list = list(chapter_list)
-        # 遍历章节列表并生成请求.
+        # 遍历章节列表, 生成章节请求.
         yield from chapter_list
+
+    def __transform(
+            self, response: Response,
+        ) -> None | Generator[Request, None, None]:
+        # 确保 chapters_crawled 已初始化
+        if self.chapters_crawled is None:
+            self.chapters_crawled = 0
+        # 获取章节列表
+        result = self.get_chapter_list(response)
+        # 如果章节列表获取失败, 则返回 None.
+        if result is None: return None
+        # 遍历章节列表, 生成章节请求.
+        for i in result:
+            # 如果章节链接匹配章节详情页模式, 则生成章节请求.
+            if self.chapter_url_pattern.match(i):
+                self.chapters_crawled += 1
+                request = response.follow(i, self.get_chapter_info, priority=5)
+            # 否则, 递归调用 __transform 方法处理新的章节列表请求.
+            else:
+                request = response.follow(i, self.__transform, priority=10)
+            # 确保章节请求携带书籍哈希值.
+            request.meta["book_hash"] = response.meta["book_hash"]
+            # 返回章节请求, 准备发送请求.
+            yield request
 
     @abstractmethod
     def get_book_info(self, response: Response) -> BookItem | None:
@@ -147,10 +171,11 @@ class GeneralSpider(Spider, ABC):
         return None
 
     @abstractmethod
-    def get_chapter_list(
-        self, response: Response, book: BookItem,
-    ) -> Iterable[Request] | None:
-        """获取章节列表, 返回章节请求的可迭代对象, 如果获取失败则返回 None."""
+    def get_chapter_list(self, response: Response) -> Iterable[str] | None:
+        """获取章节列表.
+
+        返回章节请求的可迭代对象, 或新的章节列表请求, 如果获取失败则返回 None.
+        """
         return None
 
     @abstractmethod

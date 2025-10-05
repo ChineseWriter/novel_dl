@@ -12,10 +12,11 @@ from typing import Union
 
 # 导入自定义库
 from novel_dl.items import BookItem, ChapterItem
+from novel_dl.obj import Book, Chapter
 
 
 # 定义支持的类型
-SUPPORTED_TYPES = Union[BookItem,ChapterItem]
+SUPPORTED_TYPES = Union[BookItem, ChapterItem, Book, Chapter]
 
 
 def hash_(obj: SUPPORTED_TYPES) -> str:
@@ -29,13 +30,16 @@ def hash_(obj: SUPPORTED_TYPES) -> str:
             obj.get("title", "Default Book"),
             obj.get("author", "Default Author"),
         )
-    elif isinstance(obj, ChapterItem):
+    if isinstance(obj, ChapterItem):
         return chapter_hash(
             obj.get("index", -1),
             obj.get("title", "Default Chapter"),
         )
-    else:
-        return "0" * 64
+    if isinstance(obj, Book):
+        return book_hash(obj.title, obj.author)
+    if isinstance(obj, Chapter):
+        return chapter_hash(obj.index, obj.title)
+    return "0" * 64
 
 
 def chapter_hash(index: int, title: str) -> str:
