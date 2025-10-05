@@ -9,6 +9,7 @@
 # 导入标准库
 import re
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from collections.abc import AsyncGenerator, Generator, Iterable
 from enum import Enum
 from urllib.parse import urlparse
@@ -65,8 +66,8 @@ class GeneralSpider(Spider, ABC):
             self.mode = self.Mode.BOOK
 
         # 记录在书籍模式下爬取的书籍的章节数.
-        self.chapter_list_flag: bool = False
-        self.chapters_crawled: int | None = None
+        self.chapter_list_flag: defaultdict[str, bool] = defaultdict(bool)
+        self.chapters_crawled: defaultdict[str, int] = defaultdict(int)
 
     async def start(self) -> AsyncGenerator[Request, None]:
         """爬虫的入口点, 根据爬虫的运行模式决定起始请求以及回调函数."""
@@ -158,9 +159,6 @@ class GeneralSpider(Spider, ABC):
     def __transform(
             self, response: Response,
         ) -> None | Generator[Request, None, None]:
-        # 确保 chapters_crawled 已初始化
-        if self.chapters_crawled is None:
-            self.chapters_crawled = 0
 
         # 获取章节列表
         result = self.get_chapter_list(response)
@@ -188,13 +186,13 @@ class GeneralSpider(Spider, ABC):
                     "index": index,
                 },
             )
-            self.chapters_crawled += 1
+            self.chapters_crawled[response.meta["book_hash"]] += 1
             index += 1
             yield request
 
         # 如果所有链接均为章节详情页, 则将 chapter_list_flag 设为 True.
         if content_request is None:
-            self.chapter_list_flag = True
+            self.chapter_list_flag[response.meta["book_hash"]] = True
         # 如果章节列表中存在新的章节列表请求, 则将其返回.
         else:
             content_request.meta["index"] = index
