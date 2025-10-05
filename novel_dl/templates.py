@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 # 导入第三方库
 from itemloaders import ItemLoader
 from itemloaders.processors import Identity, MapCompose, TakeFirst
+from parsel.selector import Selector
 from scrapy import Spider
 from scrapy.http import Request, Response
 
@@ -96,6 +97,7 @@ class GeneralSpider(Spider, ABC):
         # 如果书籍信息获取成功, 则获取章节列表并返回书籍信息.
         if book_info is not None:
             response.meta["book_hash"] = hash_(book_info)
+            response.meta["index"] = 1
             try: chapter_list = self.__transform(response)
             except Exception as e:  # noqa: BLE001
                 self.logger.error(f"获取章节列表时发生错误: {e}")
@@ -141,6 +143,7 @@ class GeneralSpider(Spider, ABC):
 
         # 获取章节列表, 如果获取失败则返回 None.
         response.meta["book_hash"] = hash_(book_info)
+        response.meta["index"] = 1
         try: chapter_list = self.__transform(response)
         except Exception as e:  # noqa: BLE001
             self.logger.error(f"获取章节列表时发生错误: {e}")
@@ -158,29 +161,55 @@ class GeneralSpider(Spider, ABC):
         # 确保 chapters_crawled 已初始化
         if self.chapters_crawled is None:
             self.chapters_crawled = 0
+
         # 获取章节列表
         result = self.get_chapter_list(response)
         # 如果章节列表获取失败, 则返回 None.
         if result is None: return None
 
-        flag: bool = True
+        # 取出用于传递章节索引的变量
+        index: int = response.meta["index"]
+        # 检查链接列表中是否存在章节详情页链接
+        content_request: Request | None = None
         # 遍历章节列表, 生成章节请求.
         for i in result:
-            # 如果章节链接匹配章节详情页模式, 则生成章节请求.
-            if self.chapter_url_pattern.match(i):
-                self.chapters_crawled += 1
-                request = response.follow(i, self.get_chapter_info, priority=5)
-            # 否则, 递归调用 __transform 方法处理新的章节列表请求.
-            else:
-                flag = False
-                request = response.follow(i, self.__transform, priority=10)
-            # 确保章节请求携带书籍哈希值.
-            request.meta["book_hash"] = response.meta["book_hash"]
-            # 返回章节请求, 准备发送请求.
+            # 如果链接不是章节详情页, 则将其作为新的章节列表请求返回.
+            if not self.chapter_url_pattern.match(i):
+                content_request = response.follow(
+                    i, self.__transform, priority=10,
+                    meta={"book_hash": response.meta["book_hash"]},
+                )
+                continue
+            # 如果链接是章节详情页, 则生成章节请求.
+            request = response.follow(
+                i, self.get_chapter_info, priority=5,
+                meta={
+                    "book_hash": response.meta["book_hash"],
+                    "index": index,
+                },
+            )
+            self.chapters_crawled += 1
+            index += 1
             yield request
 
-        if flag:
+        # 如果所有链接均为章节详情页, 则将 chapter_list_flag 设为 True.
+        if content_request is None:
             self.chapter_list_flag = True
+        # 如果章节列表中存在新的章节列表请求, 则将其返回.
+        else:
+            content_request.meta["index"] = index
+            yield content_request
+
+    def get_html(self, response: Response) -> Selector | None:
+        """获取并返回响应的 HTML 内容."""
+        # 获取整个 HTML 页面
+        html = response.xpath("/*")
+        # 检查是否成功获取
+        if len(html) != 1:
+            self.logger.error("在该次请求中没有找到 HTML 元素")
+            return None
+        # 成功获取 HTML 页面则返回 Selector 对象
+        return html[0]
 
     @abstractmethod
     def get_book_info(self, response: Response) -> BookItem | None:
