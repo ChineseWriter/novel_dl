@@ -7,7 +7,7 @@
    - [x] templates 模块.
    - [x] spiders 模块.
    - [x] pipelines 模块.
-   - [ ] obj 模块.
+   - [x] obj 模块.
    - [ ] utils 模块.
 2. [ ] 调整 Ruff 的配置, 使其更适合该项目.
 3. [ ] 支持更多网站.

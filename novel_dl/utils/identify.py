@@ -7,16 +7,17 @@
 
 
 # 导入标准库
+import base64
 import hashlib
 from typing import Union
 
 # 导入自定义库
+from novel_dl.entity.base import Book, Chapter, Cover
 from novel_dl.entity.items import BookItem, ChapterItem
-from novel_dl.entity.base import Book, Chapter
 
 
 # 定义支持的类型
-SUPPORTED_TYPES = Union[BookItem, ChapterItem, Book, Chapter]
+SUPPORTED_TYPES = Union[BookItem, ChapterItem, Book, Chapter, Cover]
 
 
 def hash_(obj: SUPPORTED_TYPES) -> str:
@@ -39,6 +40,8 @@ def hash_(obj: SUPPORTED_TYPES) -> str:
         return book_hash(obj.title, obj.author)
     if isinstance(obj, Chapter):
         return chapter_hash(obj.index, obj.title)
+    if isinstance(obj, Cover):
+        return _hash(base64.b64encode(obj.data).decode("UTF-8"))
     return "0" * 64
 
 
