@@ -3,9 +3,7 @@
 # @FileName: settings.py
 # @Time: 19/07/2025 17:11
 # @Author: Amundsen Severus Rubeus Bjaaland
-"""
-# settings
-novel_dl 的 Scrapy 设置文件
+"""novel_dl 的 Scrapy 设置文件.
 
 ## 说明
 为简洁起见, 此文件仅包含被视为重要或常用的设置. 你可以查阅文档获取更多设置:
@@ -32,14 +30,14 @@ novel_dl 的 Scrapy 设置文件
 
 
 # 导入标准库
-import os
+from pathlib import Path
 
 
 # 基础设置
 BOT_NAME = "novel_dl"         # 爬虫的名字, 该名称也用于日志记录
 LOG_LEVEL = "INFO"            # 设置日志级别(默认值: DEBUG)
 TELNETCONSOLE_ENABLED = True  # 是否启用 Telnet 控制台(默认启用)
-DATA_DIR = "./data"           # 数据存储目录, 用于存储图片、数据库等数据
+DATA_DIR = Path(Path.cwd()) / "data"   # 数据存储目录, 用于存储图片、数据库等数据
 DB_URI = "sqlite:///data/novel_dl.db"  # 数据库 URI, 用于存储书籍和章节信息
 
 
@@ -49,8 +47,10 @@ NEWSPIDER_MODULE = "novel_dl.spiders"  # 设置在哪里创建新的 Spider
 
 
 # 反爬相关设置
-USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) " \
-   "Gecko/20100101 Firefox/140.0"  # 设置 User-Agent 字符串, 用于模拟浏览器
+USER_AGENT = (                     # 设置 User-Agent 字符串, 用于模拟浏览器
+   "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) "
+   "Gecko/20100101 Firefox/140.0"
+)
 ROBOTSTXT_OBEY = False             # 是否遵守 robots.txt 的条款
 COOKIES_ENABLED = True             # 是否启用 Cookie(默认启用)
 DOWNLOAD_TIMEOUT = 25              # 下载的超时限制
@@ -63,17 +63,17 @@ DOWNLOAD_TIMEOUT = 25              # 下载的超时限制
 
 # 重新下载设置
 RETRY_ENABLED = True        # 重新下载功能(默认启用)
-RETRY_TIMES = 5             # 设置重新下载的最大次数(默认值：2)
+RETRY_TIMES = 5             # 设置重新下载的最大次数(默认值: 2)
 RETRY_HTTP_CODES = [        # 设置触发重新下载功能的 HTTP 错误码
-   500, 502, 503, 504, 408, 403, 404
-]                           # (默认值：500, 502, 503, 504, 408)
-# RETRY_PRIORITY_ADJUST = -1  # 设置重新下载的延迟时间(默认值：0)
+   500, 502, 503, 504, 408, 403, 404,
+]                           # (默认值: 500, 502, 503, 504, 408)
+# RETRY_PRIORITY_ADJUST = -1  # 设置重新下载的延迟时间(默认值: 0)
 
 
 # 图片下载设置
 IMAGES_URLS_FIELD = "cover_urls"      # 图片 URL 字段名
 IMAGES_RESULT_FIELD = "covers"        # 图片下载结果字段名
-IMAGES_STORE = os.path.join(DATA_DIR, "cache/images")  # 图片存储路径
+IMAGES_STORE = DATA_DIR / "cache" / "images"  # 图片存储路径
 IMAGES_EXPIRES = 5                    # 图片过期时间(单位: 天), 默认值: 90
 
 
@@ -134,12 +134,13 @@ EXTENSIONS: dict = {              # 启用的扩展
 
 # 请求去重相关设置
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"  # 设置使用的 URL 去重方法
-TWISTED_REACTOR = \
-   "twisted.internet.asyncioreactor." \
-   "AsyncioSelectorReactor"  # 设置使用的 Reactor, 该设置基于 Twisted 框架.
+TWISTED_REACTOR = (        # 设置使用的 Reactor, 该设置基于 Twisted 框架
+   "twisted.internet.asyncioreactor."
+   "AsyncioSelectorReactor"
+)
 
 # 导出相关设置
-FEED_EXPORTERS = {           # 设置导出格式与对应的导出器
+FEED_EXPORTERS = {                            # 设置导出格式与对应的导出器
    "txt": "novel_dl.exporters.TxtExporter",
    "epub": "novel_dl.exporters.EpubExporter",
 }

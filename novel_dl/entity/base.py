@@ -38,7 +38,7 @@ class Cover:
     def __repr__(self) -> str:
         return f"<Cover length={len(self.data)} source={self.source}>"
 
-    def to_jpg(self) -> None:
+    def to_jpg(self) -> "Cover":
         """将图片转换为 JPG 格式, 并将结果存储回 data 属性中."""
         # 确认图片是否存在透明通道
         if self.image.mode in ("RGBA", "P"):
@@ -54,6 +54,8 @@ class Cover:
         self.image.save(memory_file, format="JPEG", quality=95)
         # 将图片原值改变为内存文件的内容
         self.data = memory_file.getvalue()
+        # 返回新的封面对象
+        return Cover(self.source, self.data)
 
 
 class Chapter:
