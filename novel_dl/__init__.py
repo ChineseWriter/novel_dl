@@ -10,3 +10,7 @@ from pathlib import Path
 
 
 MEDIA_DIR = Path(__file__).parent / "media"
+
+__version__: dict[str, list[str]] = {
+    "0.1.0": ["初始化项目"],
+}
