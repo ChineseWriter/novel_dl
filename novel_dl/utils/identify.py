@@ -9,23 +9,18 @@
 # 导入标准库
 import base64
 import hashlib
-from typing import Union
-
-# 导入自定义库
-from novel_dl.entity.base import Book, Chapter, Cover
-from novel_dl.entity.items import BookItem, ChapterItem
+from typing import Any
 
 
-# 定义支持的类型
-SUPPORTED_TYPES = Union[BookItem, ChapterItem, Book, Chapter, Cover]
-
-
-def hash_(obj: SUPPORTED_TYPES) -> str:
+def hash_(obj: Any) -> str:
     """获取对象的唯一哈希值.
 
     请注意, 该函数传入的对象应该是 小说 或 相关信息的抽象表现,
     如 BookItem, Book 等对象.
     """
+    # 导入自定义库
+    from novel_dl.entity.base import Book, Chapter, Cover  # noqa: PLC0415
+    from novel_dl.entity.items import BookItem, ChapterItem  # noqa: PLC0415
     if isinstance(obj, BookItem):
         return book_hash(
             obj.get("title", "Default Book"),

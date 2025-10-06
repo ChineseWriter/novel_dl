@@ -35,7 +35,13 @@ def _get_intro_html(book: Book) -> str:
     ).replace(
         "{{ author }}", book.author,
     ).replace(
-        "{{ desc }}",   book.desc,
+        "{{ desc }}",
+        "".join(
+            [
+                f"<p>&emsp;&emsp;{i}</p>"
+                for i in book.desc.replace("\t", "").split("\n")
+            ],
+        ),
     ).replace(
         "{{ update_time_str }}",
         book.update_time_str if book.update_time_str else "Unknown",
@@ -55,7 +61,7 @@ def _get_chapter_html(chapter: Chapter) -> str:
         "{{ title }}", chapter.title,
     ).replace(
         "{{ update_time_str }}",
-        chapter.update_time_str if chapter.update_time else "Unknown",
+        chapter.update_time_str if chapter.update_time_str else "Unknown",
     ).replace(
         "{{ content }}",
         "".join(
@@ -142,7 +148,7 @@ def get_epub(book: Book) -> epub.EpubBook:
         # 创建章节页面, 并添加章节的 CSS
         file_name = (
             f"pages/{str(chapter.index).rjust(5, '0')}"
-            f"-{chapter.title}.xhtml",
+            f"-{chapter.title}.xhtml"
         )
         chapter_hash = hash_(chapter)
         chapter_item = epub.EpubHtml(

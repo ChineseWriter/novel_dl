@@ -75,6 +75,7 @@ class ChapterItemLoader(CIL):
         str.strip,
         lambda x: x.split("-")[0],
         lambda x: x.split(" ")[-1],
+        lambda x: "、".join(x.split("、")[1:]) if "章、" in x else x,
     )
     content_in     = MapCompose(str.strip, deal_content)
 

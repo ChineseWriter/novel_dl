@@ -84,7 +84,7 @@ CONCURRENT_ITEMS = 50          # 设置同一个管道内同时可存在的最�
 ITEM_PIPELINES = {             # 设置 Item 的管道
    "scrapy.pipelines.images.ImagesPipeline": 1,
    "novel_dl.pipelines.check.CheckPipeline": 2,
-   "novel_dl.pipelines.db.DBPipeline": 100,
+   # "novel_dl.pipelines.db.DBPipeline": 100,
    "novel_dl.pipelines.verify.VerifyPipeline": 150,
 }  # 文档: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 

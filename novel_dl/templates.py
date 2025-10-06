@@ -193,6 +193,10 @@ class GeneralSpider(Spider, ABC):
         # 如果所有链接均为章节详情页, 则将 chapter_list_flag 设为 True.
         if content_request is None:
             self.chapter_list_flag[response.meta["book_hash"]] = True
+            self.logger.info(
+                f"书籍 {response.meta['book_hash'][:8]} 的章节列表获取完成, "
+                f"共计 {self.chapters_crawled[response.meta['book_hash']]} 章.",
+            )
         # 如果章节列表中存在新的章节列表请求, 则将其返回.
         else:
             content_request.meta["index"] = index

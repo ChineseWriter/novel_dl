@@ -4,14 +4,21 @@
   </div>
   <h1>{{ title }}</h1>
   <p><span class="info-title">作者:&emsp;</span>{{ author }}</p>
-  <p><span class="info-title">描述:&emsp;</span>{{ desc }}</p>
   <p><span class="info-title">更新时间:&emsp;</span>{{ update_time_str }}</p>
-  <p><span class="info-title">标签:&emsp;</span></p>
-  <ul class="tags">
-    {{ tags }}
-  </ul>
-  <p><span class="info-title">来源:</span></p>
-  <ul class="sources">
-    {{ source }}
-  </ul>
+  <div class="desc-field">
+    <p><span class="info-title">描述:&emsp;</span></p>
+    {{ desc }}
+  </div>
+  <div class="tags-field">
+    <p><span class="info-title">标签:&emsp;</span></p>
+    <ul class="tags">
+      {{ tags }}
+    </ul>
+  </div>
+  <div class="sources-field">
+    <p><span class="info-title">来源:</span></p>
+    <ul class="sources">
+      {{ sources }}
+    </ul>
+  </div>
 </div>

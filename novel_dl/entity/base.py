@@ -112,8 +112,9 @@ class Chapter:
         return new_chapter
 
     @property
-    def update_time_str(self) -> str:
+    def update_time_str(self) -> str | None:
         """将章节的更新时间转换为可读的字符串格式. 具体为 "YYYY-MM-DD HH:MM:SS"."""
+        if not self.update_time: return None
         return time.strftime(
             "%Y-%m-%d %H:%M:%S",
             time.localtime(self.update_time),
@@ -208,7 +209,7 @@ class Book:
     def update_time_str(self) -> str | None:
         """获取书籍的更新时间(str), 即最后更新的章节的更新时间.
 
-        如果书籍没有章节, 则返回 None. 该方法会对章节排序.
+        如果书籍没有章节或章节没有更新时间数据, 则返回 None. 该方法会对章节排序.
         """
         # 检查书籍是否有章节, 如果没有则返回 None.
         if not self.chapters: return None
