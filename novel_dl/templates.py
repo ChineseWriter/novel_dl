@@ -24,7 +24,7 @@ from scrapy.http import Request, Response
 # 导入自定义库
 from novel_dl.entity.items import BookItem, ChapterItem
 from novel_dl.utils.identify import hash_
-from novel_dl.utils.str_deal import add_tab
+from novel_dl.utils.str_deal import add_tab, normalize_book_status
 
 
 class GeneralSpider(Spider, ABC):
@@ -240,7 +240,7 @@ class BookItemLoader(ItemLoader):
 
     title_in       = MapCompose(str.strip)
     author_in      = MapCompose(str.strip)
-    state_in       = MapCompose(str.strip)
+    state_in       = MapCompose(str.strip, normalize_book_status)
     desc_in        = MapCompose(str.strip, add_tab)
     source_in      = MapCompose(str.strip)
 
@@ -272,4 +272,3 @@ class ChapterItemLoader(ItemLoader):
     comments_in    = Identity()
 
     other_info_out = Identity()
-    comments_out   = Identity()

@@ -1,5 +1,7 @@
 data/
 .vscode/
+.idea/
 __pycache__/
 typings/
 test.epub
+test.html
