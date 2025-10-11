@@ -99,7 +99,7 @@ class GeneralSpider(Spider, ABC):
         if book_info is not None:
             response.meta["book_hash"] = hash_(book_info)
             response.meta["index"] = 1
-            try: chapter_list = self.__transform(response)
+            try: chapter_list = self.transform(response)
             except Exception as e:  # noqa: BLE001
                 self.logger.error(f"获取章节列表时发生错误: {e}")
             yield book_info
@@ -145,7 +145,7 @@ class GeneralSpider(Spider, ABC):
         # 获取章节列表, 如果获取失败则返回 None.
         response.meta["book_hash"] = hash_(book_info)
         response.meta["index"] = 1
-        try: chapter_list = self.__transform(response)
+        try: chapter_list = self.transform(response)
         except Exception as e:  # noqa: BLE001
             self.logger.error(f"获取章节列表时发生错误: {e}")
             return None
@@ -156,10 +156,10 @@ class GeneralSpider(Spider, ABC):
         # 遍历章节列表, 生成章节请求.
         yield from chapter_list
 
-    def __transform(
+    def transform(
             self, response: Response,
         ) -> None | Generator[Request, None, None]:
-
+        """转换章节列表页面, 获取章节列表并生成章节请求."""
         # 获取章节列表
         result = self.get_chapter_list(response)
         # 如果章节列表获取失败, 则返回 None.
@@ -174,7 +174,7 @@ class GeneralSpider(Spider, ABC):
             # 如果链接不是章节详情页, 则将其作为新的章节列表请求返回.
             if not self.chapter_url_pattern.match(i):
                 content_request = response.follow(
-                    i, self.__transform, priority=10,
+                    i, self.transform, priority=10,
                     meta={"book_hash": response.meta["book_hash"]},
                 )
                 continue

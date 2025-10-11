@@ -5,10 +5,16 @@
 # @Author: Amundsen Severus Rubeus Bjaaland
 """fanqienovel.com 小说爬虫."""
 
+import copy
+import random
 import re
 import time
-from typing import Iterable
+from logging import LoggerAdapter
+from multiprocessing import Queue
+from threading import Lock, Thread
+from typing import Generator, Iterable
 
+import requests
 from bs4 import BeautifulSoup as bs
 from itemloaders.processors import MapCompose
 from scrapy.http import Request, Response
@@ -113,6 +119,70 @@ def deal_content(content: str) -> str | None:
     return "".join(buffer)
 
 
+class CookieGenerator:
+    """生成访问 cookie."""
+
+    HEADERS = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) "
+            "Gecko/20100101 Firefox/140.0",
+    }
+
+    def __init__(
+            self, logger: LoggerAdapter | None = None, # type: ignore[reportMissingTypeArgument]
+        ) -> None:
+        """初始化 Cookie 生成器."""
+        self.__active_cookie: int = 1000000000000000000
+        self.__cookies: Queue[int] = Queue(5)
+        self.__flag = True
+        self.__lock = Lock()
+        self.__logger = logger
+
+        self.__main_thread = Thread(
+            target=self.__generate, name="Cookie 生成线程",
+        )
+        self.__main_thread.start()
+
+    def __del__(self) -> None:
+        """析构函数, 停止线程."""
+        self.__flag = False
+
+    def __generate(self) -> None:
+        while self.__flag:
+            base = 1000000000000000000
+            for i in range(random.randint(base * 6, base * 8), base * 9):
+                time.sleep(random.randint(50, 150) / 1000)
+                if self.__test(i):
+                    self.__cookies.put(i)
+                    continue
+
+    def __test(self, cookie: int) -> bool:
+        """测试 cookie 是否有效."""
+        headers = copy.deepcopy(self.HEADERS)
+        headers["cookie"] = f"novel_web_id={cookie}"
+        response = requests.get(
+            "https://fanqienovel.com/reader/7251588723630932491",
+            headers=headers, timeout=21,
+        )
+        if response.status_code != 200:
+            return False
+        html = bs(response.text, "lxml")
+        content = html.find("div", class_="muye-reader-content noselect")
+        if content is None:
+            return False
+        return not len(content.get_text(strip=True)) < 200
+
+    def get_cookie(self, old: int) -> int:
+        """获取一个可用的 cookie."""
+        cookie = 1000000000000000000
+        with self.__lock:
+            if old == self.__active_cookie:
+                self.__active_cookie = self.__cookies.get()
+                if self.__logger is not None:
+                    self.__logger.info(f"更新 cookie 为 {self.__active_cookie}.")
+            cookie = copy.deepcopy(self.__active_cookie)
+        return cookie  # noqa: RET504
+
+
 class ChapterItemLoader(CIL):
     """章节信息数据加载器."""
 
@@ -128,6 +198,61 @@ class FanqieSpider(GeneralSpider):
     domain = "www.fanqienovel.com"
     book_url_pattern = re.compile(r"^/page/\d+$")
     chapter_url_pattern = re.compile(r"^/reader/\d+$")
+
+    def __init__(self, novel_url: str | None = None) -> None:
+        """初始化爬虫实例."""
+        super().__init__(novel_url)
+
+        self.__cookie_generator = CookieGenerator(self.logger)
+
+    def transform(
+            self, response: Response,
+        ) -> None | Generator[Request, None, None]:
+        """转换章节列表页面, 获取章节列表并生成章节请求."""
+        # 获取章节列表
+        result = self.get_chapter_list(response)
+        # 如果章节列表获取失败, 则返回 None.
+        if result is None: return None
+
+        # 取出用于传递章节索引的变量
+        index: int = response.meta["index"]
+        # 检查链接列表中是否存在章节详情页链接
+        content_request: Request | None = None
+        # 获取一个可用的 cookie
+        cookie = self.__cookie_generator.get_cookie(1000000000000000000)
+        # 遍历章节列表, 生成章节请求.
+        for i in result:
+            # 如果链接不是章节详情页, 则将其作为新的章节列表请求返回.
+            if not self.chapter_url_pattern.match(i):
+                content_request = response.follow(
+                    i, self.__transform, priority=10,
+                    meta={"book_hash": response.meta["book_hash"]},
+                )
+                continue
+            # 如果链接是章节详情页, 则生成章节请求.
+            request = response.follow(
+                i, self.get_chapter_info, priority=5,
+                cookies={"novel_web_id": str(cookie)},
+                meta={
+                    "book_hash": response.meta["book_hash"],
+                    "index": index,
+                },
+            )
+            self.chapters_crawled[response.meta["book_hash"]] += 1
+            index += 1
+            yield request
+
+        # 如果所有链接均为章节详情页, 则将 chapter_list_flag 设为 True.
+        if content_request is None:
+            self.chapter_list_flag[response.meta["book_hash"]] = True
+            self.logger.info(
+                f"书籍 {response.meta['book_hash'][:8]} 的章节列表获取完成, "
+                f"共计 {self.chapters_crawled[response.meta['book_hash']]} 章.",
+            )
+        # 如果章节列表中存在新的章节列表请求, 则将其返回.
+        else:
+            content_request.meta["index"] = index
+            yield content_request
 
     def get_book_info(self, response: Response) -> BookItem | None:
         """获取书籍信息."""
@@ -169,4 +294,24 @@ class FanqieSpider(GeneralSpider):
             '//div[@class="muye-reader-subtitle"]//span[@class="desc-item"][2]/text()',
         )
         item = loader.load_item()
+        if len(item.get("content", "")) < 200:
+            request = response.request
+            if request is None:
+                old_cookie = 1000000000000000000
+            else:
+                old_cookie = request.headers.get("cookie", b"1000000000000000000")
+            if old_cookie is None:
+                old_cookie = b"1000000000000000000"
+            old_cookie = old_cookie.decode("ASCII")
+            old_cookie = old_cookie.split("=")[-1]
+            cookie = self.__cookie_generator.get_cookie(int(old_cookie))
+            return Request(
+                response.url, self.get_chapter_info, priority=5,
+                cookies={"novel_web_id": str(cookie)},
+                meta={
+                    "book_hash": response.meta["book_hash"],
+                    "index": response.meta["index"],
+                },
+                dont_filter=True,
+            )
         return loader.load_item()
