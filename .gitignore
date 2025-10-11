@@ -5,3 +5,5 @@ __pycache__/
 typings/
 test.epub
 test.html
+test.txt
+building.py

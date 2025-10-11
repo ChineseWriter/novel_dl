@@ -140,7 +140,7 @@ def get_epub(book: Book) -> epub.EpubBook:
     )
     ebook.add_item(intro_e)
     # 创建目录
-    spine: list[epub.EpubHtml | str] = [intro_e, "nav"]
+    spine: list[epub.EpubHtml | str] = [intro_e]
     toc = []
     toc_buffer = []
     # 处理每一章节

@@ -39,7 +39,8 @@ def TND(path: Path) -> Book:
     author = info_fields[0].text.split("：")[-1]  # noqa: RUF001
     state = info_fields[1].text.split("；")[0].split("：")[-1]  # noqa: RUF001
     state = normalize_book_status(state)
-    desc = str(intro_page.find_all("p")[-1])[3:-4].replace("<br/>", "\n")
+    desc = str(intro_page.find_all("p")[-1])[3:-4] \
+        .replace("<br/>", "\n").replace("\n\n", "\n").replace("\n\n", "\n")
     book_obj = Book(title, author, state, desc, [], [], {})  # type: ignore[reportUnknownVariableType]
     book_obj.covers.append(Cover("", cover.get_content()))
 
@@ -47,9 +48,11 @@ def TND(path: Path) -> Book:
     item_list = [book.get_item_with_id(i[0]) for i in spine][1:]
     for index, item in enumerate(item_list):
         content = bs(item.get_content(), "lxml")
+        name = content.find("h1").text
+        name = " ".join(name.split(" ")[1:])
         book_obj.append(
             Chapter(
-                hash_(book), index + 1, content.find("h1").text, 0.0,
+                hash_(book), index + 1, name, 0.0,
                 "\t" + "\n\t".join(i.text for i in content.find_all("p")),
                 [], {},
             ),
