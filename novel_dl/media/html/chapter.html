@@ -1,22 +1,27 @@
 <div class="container">
+  <div class="chapter-title">
     <h1>第{{ index }}章&emsp;{{ title }}</h1>
+  </div>
+
+  <div class="chapter-info">
     <p>
-        <span class="info-title">更新时间:&emsp;</span>
-        {{ update_time_str }}
+      <span class="info-title">更新时间:&emsp;</span>
+      {{ update_time_str }}
     </p>
-    <div class="chapter-content">{{ content }}</div>
-    <div class="hidden">
-        <div class="sources">
-            <h2>来源</h2>
-            <ul class="sources">
-                {{ source }}
-            </ul>
-        </div>
-        <div class="other-info">
-            <h2>其它信息</h2>
-            <dl>
-                {{ other_info }}
-            </dl>
-        </div>
+  </div>
+
+  <div class="chapter-content">{{ content }}</div>
+
+  <div class="hidden">
+    <div class="sources">
+      <h2>来源</h2>
+      <ul class="sources">
+        {{ source }}
+      </ul>
     </div>
+    <div class="other-info">
+      <h2>其它信息</h2>
+      <dl>{{ other_info }}</dl>
+    </div>
+  </div>
 </div>
