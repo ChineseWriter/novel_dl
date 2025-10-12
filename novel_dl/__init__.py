@@ -12,5 +12,6 @@ from pathlib import Path
 MEDIA_DIR = Path(__file__).parent / "media"
 
 __version__: dict[str, list[str]] = {
-    "0.1.0": ["初始化项目"],
+    "0.1.0": ["初始化项目."],
+    "0.1.1": ["增加对番茄小说网的支持, 注意, 不支持下载小说具体内容."],
 }

@@ -156,7 +156,8 @@ class CheckPipeline:
         assert item["update_time"]    >= 0.0, "章节更新时间不能为负数"
 
         # 其它检查
-        if len(item["content"]) <= 800:
+        if (len(item["content"]) <= 800) and \
+            (spider.name != "fanqienovel_com"):
             spider.logger.warning(
                 f"章节 '{item["title"]}' 的内容过短, 可能是抓取不完整: \n"
                 f"{item["content"]}",
