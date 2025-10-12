@@ -38,7 +38,6 @@ BOT_NAME = "novel_dl"         # 爬虫的名字, 该名称也用于日志记录
 LOG_LEVEL = "INFO"            # 设置日志级别(默认值: DEBUG)
 TELNETCONSOLE_ENABLED = True  # 是否启用 Telnet 控制台(默认启用)
 DATA_DIR = Path(Path.cwd()) / "data"   # 数据存储目录, 用于存储图片、数据库等数据
-DB_URI = "sqlite:///data/novel_dl.db"  # 数据库 URI, 用于存储书籍和章节信息
 
 
 # 爬虫模块设置
@@ -84,7 +83,7 @@ CONCURRENT_ITEMS = 50          # 设置同一个管道内同时可存在的最�
 ITEM_PIPELINES = {             # 设置 Item 的管道
    "scrapy.pipelines.images.ImagesPipeline": 1,
    "novel_dl.pipelines.check.CheckPipeline": 2,
-   # "novel_dl.pipelines.db.DBPipeline": 100,
+   "novel_dl.pipelines.db.DBPipeline": 100,
    "novel_dl.pipelines.verify.VerifyPipeline": 150,
 }  # 文档: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 

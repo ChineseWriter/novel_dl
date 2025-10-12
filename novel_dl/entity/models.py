@@ -36,14 +36,14 @@ class BookTable(Base):
     tags:       Mapped[list[str]]      = mapped_column(JSON(),       nullable=False  )
     other_info: Mapped[dict[str, str]] = mapped_column(JSON(),       nullable=False  )
     # 定义一对多的关系
-    sources: Mapped[list["BookSourceTable"]] = relationship(
-        back_populates="book", cascade="all, delete-orphan",
+    sources:  Mapped[list["BookSourceTable"]] = relationship(
+        back_populates="book", cascade="all, delete-orphan, merge",
     )
-    covers:     Mapped[list["CoverTable"]]   = relationship(
-        back_populates="book", cascade="all, delete-orphan",
+    covers:   Mapped[list["CoverTable"]]      = relationship(
+        back_populates="book", cascade="all, delete-orphan, merge",
     )
-    chapters:   Mapped[list["ChapterTable"]] = relationship(
-        back_populates="book", cascade="all, delete-orphan",
+    chapters: Mapped[list["ChapterTable"]]    = relationship(
+        back_populates="book", cascade="all, delete-orphan, merge",
     )
 
     __table_args__ = (
@@ -69,7 +69,7 @@ class BookSourceTable(Base):
     book_hash: Mapped[str] = mapped_column(
         String(64), ForeignKey(
             BOOK_COLUMN_STRING, ondelete="CASCADE",
-        ), primary_key=True,
+        ), nullable=False,
     )
     book: Mapped[BookTable] = relationship(back_populates="sources")
 
@@ -91,7 +91,7 @@ class CoverTable(Base):
     book_hash: Mapped[str] = mapped_column(
         String(64), ForeignKey(
             BOOK_COLUMN_STRING, ondelete="CASCADE",
-        ), primary_key=True,
+        ), nullable=False,
     )
     book: Mapped[BookTable] = relationship(back_populates="covers")
 
@@ -116,12 +116,12 @@ class ChapterTable(Base):
     book_hash: Mapped[str] = mapped_column(
         String(64), ForeignKey(
             BOOK_COLUMN_STRING, ondelete="CASCADE",
-        ), primary_key=True,
+        ), nullable=False,
     )
     book: Mapped[BookTable] = relationship(back_populates="chapters")
     # 定义一对多的关系
     sources: Mapped[list["ChapterSourceTable"]] = relationship(
-        back_populates="chapter", cascade="all, delete-orphan",
+        back_populates="chapter", cascade="all, delete-orphan, merge",
     )
 
     __table_args__ = (
@@ -141,13 +141,13 @@ class ChapterSourceTable(Base):
     # 设置在数据库中的表名
     __tablename__ = "chapter_sources"
     # 定义表中的各个字段
-    url_hash:   Mapped[str] = mapped_column(String(64),   primary_key=True)
-    url:        Mapped[str] = mapped_column(String(2048), nullable=False  )
+    url_hash:   Mapped[str]   = mapped_column(String(64),   primary_key=True)
+    url:        Mapped[str]   = mapped_column(String(2048), nullable=False  )
     # 定义与章节表的外键关系
     chapter_hash: Mapped[str] = mapped_column(
         String(64), ForeignKey(
             "chapters.chapter_hash", ondelete="CASCADE",
-        ), primary_key=True,
+        ), nullable=False,
     )
     chapter: Mapped[ChapterTable] = relationship(back_populates="sources")
 

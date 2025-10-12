@@ -15,7 +15,7 @@ from scrapy.exporters import BaseItemExporter
 
 # 导入自定义库
 from novel_dl.entity.items import BookItem, ChapterItem
-from novel_dl.utils.convert import item_to_book, item_to_chapter
+from novel_dl.entity.convert import item_to_book, item_to_chapter
 from novel_dl.utils.epub import get_epub
 
 

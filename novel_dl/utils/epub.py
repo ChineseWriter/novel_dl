@@ -44,7 +44,8 @@ def _get_intro_html(book: Book) -> str:
         ),
     ).replace(
         "{{ update_time_str }}",
-        book.update_time_str if book.update_time_str else "Unknown",
+        f'<p><span class="info-title">更新时间:&emsp;</span>{book.update_time_str}</p>'
+        if book.update_time_str else "",
     ).replace(
         "{{ tags }}",
         "".join([f"<li>{i}</li>" for i in book.tags]),
@@ -61,7 +62,8 @@ def _get_chapter_html(chapter: Chapter) -> str:
         "{{ title }}", chapter.title,
     ).replace(
         "{{ update_time_str }}",
-        chapter.update_time_str if chapter.update_time_str else "Unknown",
+        f'<p><span class="info-title">更新时间:&emsp;</span>{chapter.update_time_str}</p>'
+        if chapter.update_time_str else "",
     ).replace(
         "{{ content }}",
         "".join(
@@ -150,10 +152,11 @@ def get_epub(book: Book) -> epub.EpubBook:
             f"pages/{str(chapter.index).rjust(5, '0')}"
             f"-{chapter.title}.xhtml"
         )
+        title = f"第{chapter.index}章 {chapter.title}"
         chapter_hash = hash_(chapter)
         chapter_item = epub.EpubHtml(
             uid=chapter_hash, lang="zh-CN",
-            title=f"第{chapter.index}章 {chapter.title}",
+            title=title,
             file_name=file_name,
         )
         chapter_item.add_link(
@@ -163,7 +166,7 @@ def get_epub(book: Book) -> epub.EpubBook:
         chapter_item.content = _get_chapter_html(chapter)
         ebook.add_item(chapter_item)
         # 将章节添加到目录中
-        toc.append(epub.Link(file_name, chapter.title, chapter_hash))
+        toc.append(epub.Link(file_name, title, chapter_hash))
         toc_buffer.append(chapter_item)
         spine.append(chapter_item)
     # 合成目录

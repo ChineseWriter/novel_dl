@@ -181,11 +181,9 @@ class Book:
         for one_cover in other.covers:
             if hash_(one_cover) not in cover_hashes:
                 new_book.covers.append(one_cover)
-        # 合并书籍的章节, 使用对象的 hash 值确保不重复
-        chapter_hashes = [hash_(i) for i in self.chapters]
+        # 合并书籍的章节
         for one_chapter in other.chapters:
-            if hash_(one_chapter) not in chapter_hashes:
-                new_book.chapters.append(one_chapter)
+            new_book.append(one_chapter)
         # 对合并后的章节进行排序, 按照章节索引升序排列
         new_book.chapters.sort(key=lambda x: x.index)
         # 返回合并后的新书籍对象
@@ -237,10 +235,22 @@ class Book:
 
     def append(self, chapter: Chapter) -> None:
         """向书籍对象中添加章节. 如果章节已经存在, 则合并章节信息."""
+        if chapter.book_hash != hash_(self):
+            raise ValueError(
+                "向书籍对象中添加章节时, 要求章节的 book_hash 与书籍的 hash 相同.",
+            )
         # 遍历现有章节
         for index, one_chapter in enumerate(self.chapters):
             # 如果章节已经存在, 则合并章节信息
             if hash_(one_chapter) == hash_(chapter):
+                self.chapters[index] = one_chapter + chapter
+                return
+            # 如果 hash 值不同但索引相同, 则认为是同一章节, 进行合并(消除章节名差异)
+            if one_chapter.index == chapter.index:
+                if len(one_chapter.title) < len(chapter.title):
+                    one_chapter.title = chapter.title
+                else:
+                    chapter.title = one_chapter.title
                 self.chapters[index] = one_chapter + chapter
                 return
         # 如果章节不存在, 则直接添加章节

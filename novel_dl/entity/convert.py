@@ -48,7 +48,7 @@ def cover_to_record(cover: Cover) -> CoverTable:
     return CoverTable(
         cover_hash = hash_(cover),
         source     = cover.source,
-        cover      = cover.data,
+        image      = cover.data,
     )
 
 

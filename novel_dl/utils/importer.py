@@ -52,7 +52,7 @@ def TND(path: Path) -> Book:
         name = " ".join(name.split(" ")[1:])
         book_obj.append(
             Chapter(
-                hash_(book), index + 1, name, 0.0,
+                hash_(book_obj), index + 1, name, 0.0,
                 "\t" + "\n\t".join(i.text for i in content.find_all("p")),
                 [], {},
             ),
