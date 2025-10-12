@@ -7,12 +7,14 @@
 
 
 # 导入标准库
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable  # noqa: I001
 
 # 导入自定义库: 用于类型转换
 from novel_dl.entity.base import Book, Chapter, Cover
 from novel_dl.entity.items import BookItem, ChapterItem
-from novel_dl.entity.models import BookTable, ChapterTable, ContentTable, CoverTable, ExtraInfoTable
+from novel_dl.entity.models import (
+    BookTable, ChapterTable, CoverTable, BookSourceTable, ChapterSourceTable,
+)
 from novel_dl.settings import IMAGES_STORE
 from novel_dl.utils.identify import hash_
 
@@ -38,7 +40,7 @@ def item_to_cover(item: BookItem) -> Iterable[Cover]:
 
 def record_to_cover(record: CoverTable) -> Cover:
     """将数据库记录转换为 Cover 对象."""
-    return Cover(source=record.source, data=record.cover)
+    return Cover(source=record.source, data=record.image)
 
 
 def cover_to_record(cover: Cover) -> CoverTable:
@@ -63,51 +65,34 @@ def item_to_chapter(item: ChapterItem) -> Chapter:
     )
 
 
-def chapter_to_item(chapter: Chapter) -> ChapterItem:
-    """将 Chapter 对象转换为 ChapterItem."""
-    item = ChapterItem()
-    item["book_hash"]   = chapter.book_hash
-    item["index"]       = chapter.index
-    item["title"]       = chapter.title
-    item["content"]     = chapter.content
-    item["source"]      = chapter.sources[0]
-    item["update_time"] = chapter.update_time
-    item["other_info"]  = chapter.other_info
-    return item
-
-
-def record_to_chapter(
-    record_info: ChapterTable, record_content: ContentTable,
-) -> Chapter:
+def record_to_chapter(record: ChapterTable) -> Chapter:
     """将数据库记录转换为 Chapter 对象."""
     return Chapter(
-        book_hash   = record_info.book_hash,
-        index       = record_info.index,
-        title       = record_info.title,
-        update_time = record_info.update_time,
-        content     = record_content.content,
-        sources     = record_content.sources,
-        other_info  = record_content.other_info,
+        book_hash   = record.book_hash,
+        index       = record.index,
+        title       = record.title,
+        update_time = record.update_time,
+        content     = record.content,
+        sources     = [i.url for i in record.sources],
+        other_info  = record.other_info,
     )
 
 
 def chapter_to_record(chapter: Chapter) -> ChapterTable:
     """将 Chapter 对象转换为数据库记录."""
-    content_record = ContentTable(
-        chapter_hash = chapter.hash,
-        content      = chapter.content,
-        sources      = chapter.sources,
-        other_info   = chapter.other_info,
-    )
-    chapter_record = ChapterTable(
-        chapter_hash = chapter.hash,
+    return ChapterTable(
+        chapter_hash = hash_(chapter),
         index        = chapter.index,
         title        = chapter.title,
         update_time  = chapter.update_time,
+        content      = chapter.content,
+        other_info   = chapter.other_info,
         book_hash    = chapter.book_hash,
+        sources      = [
+            ChapterSourceTable(url_hash = hash_(i), url = i)
+            for i in chapter.sources
+        ],
     )
-    chapter_record.content = content_record
-    return chapter_record
 
 
 def item_to_book(item: BookItem) -> Book:
@@ -121,21 +106,8 @@ def item_to_book(item: BookItem) -> Book:
         sources    = [item["source"]],
         other_info = item["other_info"],
     )
-    covers_obj = list(item_to_cover(item))
-    book_obj.covers = covers_obj
+    book_obj.covers = list(item_to_cover(item))
     return book_obj
-
-
-def book_to_item(book: Book) -> BookItem:
-    """将 Book 对象转换为 BookItem, 注意: 不包含封面数据."""
-    item = BookItem()
-    item["title"]      = book.title
-    item["author"]     = book.author
-    item["state"]      = book.state
-    item["desc"]       = book.desc
-    item["source"]     = book.sources[0]
-    item["other_info"] = book.other_info
-    return item
 
 
 def record_to_book(record: BookTable) -> Book:
@@ -144,36 +116,30 @@ def record_to_book(record: BookTable) -> Book:
         title      = record.title,
         author     = record.author,
         state      = Book.state_shift_2[record.state],
-        desc       = record.extra_info.desc,
-        tags       = record.extra_info.tags,
-        sources    = record.extra_info.sources,
-        other_info = record.extra_info.other_info,
+        desc       = record.desc,
+        tags       = record.tags,
+        sources    = [i.url for i in record.sources],
+        other_info = record.other_info,
     )
-    book_obj.covers = [record_to_cover(i) for i in record.covers]
-    book_obj.chapters = [
-        record_to_chapter(i, i.content) for i in record.chapters
-    ]
+    book_obj.covers   = [record_to_cover(i)   for i in record.covers  ]
+    book_obj.chapters = [record_to_chapter(i) for i in record.chapters]
     return book_obj
 
 
 def book_to_record(book: Book) -> BookTable:
     """将 Book 对象转换为数据库记录, 注意: 不包含封面和章节数据."""
-    book_record = BookTable(
-        book_hash = book.hash,
-        title     = book.title,
-        author    = book.author,
-        state     = Book.state_shift_1[book.state],
-    )
-    info_record = ExtraInfoTable(
-        book_hash  = book.hash,
+    return BookTable(
+        book_hash  = hash_(book),
+        title      = book.title,
+        author     = book.author,
+        state      = Book.state_shift_1[book.state],
         desc       = book.desc,
         tags       = book.tags,
-        sources    = book.sources,
         other_info = book.other_info,
+        sources    = [
+            BookSourceTable(url_hash = hash_(i), url = i)
+            for i in book.sources
+        ],
+        covers     = [cover_to_record(i) for i in book.covers],
+        chapters   = [chapter_to_record(i) for i in book.chapters],
     )
-    cover_records = [cover_to_record(i) for i in book.covers]
-    for one_cover in cover_records:
-        one_cover.book_hash = book.hash
-    book_record.extra_info = info_record
-    book_record.covers = cover_records
-    return book_record

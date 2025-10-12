@@ -97,12 +97,13 @@ class CheckPipeline:
             "书籍封面 URL 列表属性不是列表"
         assert isinstance(item["covers"],     list), \
             "书籍封面图片列表属性不是列表"
+        for k, v in item["other_info"].items():
+            assert isinstance(k, str),  "书籍其它信息的键不是字符串"
+            assert isinstance(v, str),  "书籍其它信息的值不是字符串"
         for i in item["cover_urls"]:
-            assert isinstance(i, str), \
-                "书籍封面 URL 列表中的元素不是字符串"
+            assert isinstance(i, str),  "书籍封面 URL 列表中的元素不是字符串"
         for i in item["covers"]:
-            assert isinstance(i, dict), \
-                "书籍封面图片列表中的元素不是字典"
+            assert isinstance(i, dict), "书籍封面图片列表中的元素不是字典"
 
         # 非默认值检查
         assert item["title"]  != "Default Book",    "书籍标题不能是默认值"
@@ -142,6 +143,9 @@ class CheckPipeline:
             "章节更新时间不是浮点数"
         assert isinstance(item["other_info"],  dict), \
             "章节其它信息不是字典"
+        for k, v in item["other_info"].items():
+            assert isinstance(k, str),  "章节其它信息的键不是字符串"
+            assert isinstance(v, str),  "章节其它信息的值不是字符串"
 
         # 非默认值检查
         assert item["book_hash"] != "0"*64,          "书籍哈希值不能是默认值"

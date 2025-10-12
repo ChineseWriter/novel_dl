@@ -10,7 +10,6 @@
 import copy
 import time
 from io import BytesIO
-from typing import Any
 
 # 导入第三方库
 from PIL import Image
@@ -64,7 +63,7 @@ class Chapter:
     def __init__(
         self, book_hash: str, index: int,
         title: str, update_time: float, content: str,
-        sources: list[str], other_info: dict[str, Any],
+        sources: list[str], other_info: dict[str, str],
     ) -> None:
         """初始化章节对象."""
         self.book_hash = book_hash
@@ -129,7 +128,7 @@ class Book:
 
     def __init__(
         self, title: str, author: str, state: str, desc: str,
-        tags: list[str], sources: list[str], other_info: dict[str, Any],
+        tags: list[str], sources: list[str], other_info: dict[str, str],
     ) -> None:
         """初始化书籍对象."""
         self.title = title

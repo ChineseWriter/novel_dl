@@ -12,14 +12,14 @@ import hashlib
 from typing import Any
 
 
-def hash_(obj: Any) -> str:
+def hash_(obj: Any) -> str:  # noqa: PLR0911
     """获取对象的唯一哈希值.
 
     请注意, 该函数传入的对象应该是 小说 或 相关信息的抽象表现,
     如 BookItem, Book 等对象.
     """
     # 导入自定义库
-    from novel_dl.entity.base import Book, Chapter, Cover  # noqa: PLC0415
+    from novel_dl.entity.base import Book, Chapter, Cover    # noqa: PLC0415, I001
     from novel_dl.entity.items import BookItem, ChapterItem  # noqa: PLC0415
     if isinstance(obj, BookItem):
         return book_hash(
@@ -37,6 +37,8 @@ def hash_(obj: Any) -> str:
         return chapter_hash(obj.index, obj.title)
     if isinstance(obj, Cover):
         return _hash(base64.b64encode(obj.data).decode("UTF-8"))
+    if isinstance(obj, str):
+        return _hash(obj)
     return "0" * 64
 
 

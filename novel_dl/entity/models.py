@@ -36,7 +36,7 @@ class BookTable(Base):
     tags:       Mapped[list[str]]      = mapped_column(JSON(),       nullable=False  )
     other_info: Mapped[dict[str, str]] = mapped_column(JSON(),       nullable=False  )
     # 定义一对多的关系
-    sources: Mapped["BookSourceTable"]     = relationship(
+    sources: Mapped[list["BookSourceTable"]] = relationship(
         back_populates="book", cascade="all, delete-orphan",
     )
     covers:     Mapped[list["CoverTable"]]   = relationship(
@@ -86,7 +86,7 @@ class CoverTable(Base):
     # 定义表中的各个字段
     cover_hash: Mapped[str]   = mapped_column(String(64),     primary_key=True)
     source:     Mapped[str]   = mapped_column(String(2048),   nullable=False  )
-    cover:      Mapped[bytes] = mapped_column(LargeBinary(),  nullable=False  )
+    image:      Mapped[bytes] = mapped_column(LargeBinary(),  nullable=False  )
     # 定义与书籍表的外键关系
     book_hash: Mapped[str] = mapped_column(
         String(64), ForeignKey(
@@ -120,7 +120,7 @@ class ChapterTable(Base):
     )
     book: Mapped[BookTable] = relationship(back_populates="chapters")
     # 定义一对多的关系
-    sources: Mapped["ChapterSourceTable"]     = relationship(
+    sources: Mapped[list["ChapterSourceTable"]] = relationship(
         back_populates="chapter", cascade="all, delete-orphan",
     )
 
