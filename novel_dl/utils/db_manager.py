@@ -49,6 +49,31 @@ def synchronized(func):
     return lock_func
 
 
+def _get_file_path(index: int) -> Path:
+    """根据索引获取数据库文件路径."""
+    db_file_name = f"novel_dl_{str(index).rjust(5, '0')}.sqlite"
+    return DB_FOLDER / db_file_name
+
+
+def _merge_book(book: Book, old_book: Book, session: Session) -> None:
+    """合并新旧书籍信息."""
+    new_book = book + old_book
+    # 提前删除合并后 hash 有变化但 index 没变化的章节
+    # 防止出现存在的章节重复插入导致唯一约束检查失败的问题
+    for i in old_book.chapters:
+        for ii in new_book.chapters:
+            if (i.index == ii.index) and (hash_(i) != hash_(ii)):
+                session.query(ChapterTable).filter(
+                    ChapterTable.book_hash == i.book_hash,
+                ).delete()
+    # 转换为数据库记录
+    new_book = book_to_record(new_book)
+    # 合并更新书籍记录
+    session.merge(new_book)
+    # 提交更改
+    session.commit()
+
+
 class DBManager:
     """数据库管理器."""
 
@@ -72,21 +97,14 @@ class DBManager:
         # 连接数据库并确保至少有一个未满的数据库
         while True:
             self.__connect(self.__counter)
-            if self.__is_full(self.__counter):
-                self.__counter += 1
-            else:
-                break
+            if self.__is_full(self.__counter): self.__counter += 1
+            else: break
         # 记录当前未满的数据库文件路径
         self.__not_full: Path = self.__get_file_path(self.__counter)
 
-    def __get_file_path(self, index: int) -> Path:
-        # 根据索引获取数据库文件路径
-        db_file_name = f"novel_dl_{str(index).rjust(5, '0')}.sqlite"
-        return DB_FOLDER / db_file_name
-
     def __connect(self, index: int) -> None:
         # 获取数据库文件路径
-        db_path = self.__get_file_path(index)
+        db_path = _get_file_path(index)
         # 创建数据库连接、数据库表和会话工厂
         engine = create_engine(
             f"sqlite:///{db_path}",
@@ -99,7 +117,7 @@ class DBManager:
 
     def __is_full(self, index: int) -> bool:
         # 获取数据库文件路径
-        db_path = self.__get_file_path(index)
+        db_path = _get_file_path(index)
         # 如果数据库未连接, 则先连接
         if db_path not in self.__db_dict:
             self.__connect(index)
@@ -123,28 +141,17 @@ class DBManager:
                 # 如果书籍已存在, 则更新书籍信息并删除旧章节
                 if old_record is not None:
                     # 合并新旧书籍信息
-                    new_book = book + record_to_book(old_record)
-                    # 转换为数据库记录
-                    new_book = book_to_record(new_book)
-                    # 删除旧章节
-                    session.query(ChapterTable).filter(
-                        ChapterTable.book_hash == hash_(book),
-                    ).delete()
-                    # 合并更新书籍记录
-                    session.merge(new_book)
-                    # 提交更改并返回
-                    session.commit()
+                    _merge_book(book, record_to_book(old_record), session)
                     return
         # 如果每个数据库都没有该书籍, 则添加到当前未满的数据库
         with self.__db_dict[self.__not_full][1]() as session:
             for i in set(book.title):
                 # 添加索引记录
-                session.add(
-                    IndexTable(
-                        hash_=hash_(f"{hash_(book)}-{i}"),
-                        word=i, book_hash=hash_(book),
-                    ),
-                )
+                session.add(IndexTable(
+                    hash_     = hash_(f"{hash_(book)}-{i}"),
+                    word      = i,
+                    book_hash = hash_(book),
+                ))
             # 添加书籍记录并提交更改
             book_record = book_to_record(book)
             session.add(book_record)
