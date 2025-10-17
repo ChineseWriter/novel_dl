@@ -30,59 +30,53 @@ with (MEDIA_DIR / "html" / "chapter.html").open("r", encoding="UTF-8") as f:
 
 def _get_intro_html(book: Book) -> str:
     """生成电子书的简介页面."""
-    return INTRODUCE_HTML.replace(
-        "{{ title }}",  book.title,
-    ).replace(
-        "{{ author }}", book.author,
-    ).replace(
+    content = INTRODUCE_HTML.replace("{{ title }}",           book.title          )
+    content = content.replace(       "{{ author }}",          book.author         )
+    content = content.replace(       "{{ update_time_str }}", book.update_time_str)
+    content = content.replace(
         "{{ desc }}",
         "".join(
-            [
-                f"<p>&emsp;&emsp;{i}</p>"
-                for i in book.desc.replace("\t", "").split("\n")
-            ],
+            f"<p>&emsp;&emsp;{i}</p>"
+            for i in book.desc.replace("\t", "").split("\n")
         ),
-    ).replace(
-        "{{ update_time_str }}", book.update_time_str,
-    ).replace(
+    )
+    content = content.replace(
         "{{ tags }}",
         (
-            "".join([f'<span class="tag">{i}</span>' for i in book.tags])
+            "".join(f'<span class="tag">{i}</span>' for i in book.tags)
             if bool(book.tags) else "<span>None</span>"
         ),
-    ).replace(
-        "{{ sources }}",
-        "".join([f'<li><a href="{i}">{i}</a></li>' for i in book.sources]),
     )
+    content = content.replace(
+        "{{ sources }}",
+        "".join(f'<li><a href="{i}">{i}</a></li>' for i in book.sources),
+    )
+    return content  # noqa: RET504
 
 def _get_chapter_html(chapter: Chapter) -> str:
     """生成电子书的章节页面."""
-    return CHAPTER_HTML.replace(
-        "{{ index }}", str(chapter.index),
-    ).replace(
-        "{{ title }}", chapter.title,
-    ).replace(
-        "{{ update_time_str }}", chapter.update_time_str,
-    ).replace(
+    content = CHAPTER_HTML.replace("{{ index }}",           str(chapter.index)     )
+    content = content.replace(     "{{ title }}",           chapter.title          )
+    content = content.replace(     "{{ update_time_str }}", chapter.update_time_str)
+    content = content.replace(
         "{{ content }}",
         "".join(
-            [
-                f"<p>&emsp;&emsp;{i}</p>"
-                for i in chapter.content.replace("\t", "").split("\n")
-            ],
-        ),
-    ).replace(
-        "{{ source }}",
-        "".join([f"<li><a href='{i}'>{i}</a></li>" for i in chapter.sources]),
-    ).replace(
-        "{{ other_info }}",
-        "".join(
-            [
-                f"<dt>{k}</dt><dd>{v}</dd>"
-                for k, v in chapter.other_info.items()
-            ],
+            f"<p>&emsp;&emsp;{i}</p>"
+            for i in chapter.content.replace("\t", "").split("\n")
         ),
     )
+    content = content.replace(
+        "{{ source }}",
+        "".join(f"<li><a href='{i}'>{i}</a></li>" for i in chapter.sources),
+    )
+    content = content.replace(
+        "{{ other_info }}",
+        "".join(
+            f"<dt>{k}</dt><dd>{v}</dd>"
+            for k, v in chapter.other_info.items()
+        ),
+    )
+    return content  # noqa: RET504
 
 def get_epub(book: Book) -> epub.EpubBook:
     """将 Book 对象转换为 epub 格式的电子书."""
