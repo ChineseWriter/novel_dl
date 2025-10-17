@@ -100,7 +100,7 @@ class DBManager:
             if self.__is_full(self.__counter): self.__counter += 1
             else: break
         # 记录当前未满的数据库文件路径
-        self.__not_full: Path = self.__get_file_path(self.__counter)
+        self.__not_full: Path = _get_file_path(self.__counter)
 
     def __connect(self, index: int) -> None:
         # 获取数据库文件路径

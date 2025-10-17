@@ -47,14 +47,14 @@ class CheckPipeline:
         # 判断 Item 的类型, 并依据类型进行处理
         if isinstance(item, BookItem):
             # 若为 BookItem 类型则执行 check_book_item 检查
-            try: CheckPipeline.check_book_item(item, spider)
+            try: passed_item = CheckPipeline.check_book_item(item, spider)
             except AssertionError as error:
                 spider.logger.warning(
                     f"BookItem 检查失败: \n'{item!r}' -> {error}",
                 )
                 raise DropItem(str(error)) from error
             spider.logger.debug(f"BookItem 检查通过: '{item!r}'")
-            return item
+            return passed_item
         if isinstance(item, ChapterItem):
             # 若为 ChapterItem 类型则执行 check_chapter_item 检查
             try: CheckPipeline.check_chapter_item(item, spider)
@@ -72,7 +72,7 @@ class CheckPipeline:
         raise DropItem(f"'{item!r}' 不是一个 BookItem 或 ChapterItem.")
 
     @staticmethod
-    def check_book_item(item: BookItem, _: GeneralSpider) -> None:
+    def check_book_item(item: BookItem, spider: GeneralSpider) -> BookItem:
         """检查 BookItem 的有效性和完整性."""
         # 必填字段检查
         assert "title"  in item, "书籍标题不能为空"
@@ -80,12 +80,10 @@ class CheckPipeline:
         assert "state"  in item, "书籍状态不能为空"
         assert "desc"   in item, "书籍简介不能为空"
         assert "source" in item, "书籍来源不能为空"
-
         # 转换可能为空的字段
         if "other_info" not in item: item["other_info"] = {}
         if "cover_urls" not in item: item["cover_urls"] = []
         if "covers"     not in item: item["covers"]     = []
-
         # 类型检查
         assert isinstance(item["title"],      str),  "书籍标题不是字符串"
         assert isinstance(item["author"],     str),  "书籍作者不是字符串"
@@ -104,19 +102,24 @@ class CheckPipeline:
             assert isinstance(i, str),  "书籍封面 URL 列表中的元素不是字符串"
         for i in item["covers"]:
             assert isinstance(i, dict), "书籍封面图片列表中的元素不是字典"
-
         # 非默认值检查
         assert item["title"]  != "Default Book",    "书籍标题不能是默认值"
         assert item["author"] != "Default Author",  "书籍作者不能是默认值"
         assert item["state"]  != "Unknown",         "书籍状态不能是默认值"
         assert item["desc"]   != "Default Desc",    "书籍简介不能是默认值"
         assert item["source"] != DEFAULT_URL,       "书籍来源不能是默认 URL"
-
         # 逻辑检查
-        assert len(item["cover_urls"]) == len(item["covers"]), \
-            "书籍封面 URL 列表和封面图片列表长度不一致"
+        if len(item["cover_urls"]) != len(item["covers"]):
+            spider.logger.warning(
+                f"书籍 '{item["title"]}' 的封面 URL 列表和封面图片列表长度不一致: "
+                f"{len(item["cover_urls"])} != {len(item["covers"])}",
+            )
+            item["cover_urls"] = []
+            item["covers"]     = []
         assert item["state"] in ["完结", "连载", "断更", "未知"], \
             "书籍状态只能是'完结'、'连载'、'断更'、'未知'中的一种"
+        # 返回检查通过的 Item
+        return item
 
     @staticmethod
     def check_chapter_item(item: ChapterItem, spider: GeneralSpider) -> None:
