@@ -87,6 +87,7 @@ class XiaxsSpider(GeneralSpider):
     domain = "www.xiaxs.com"
     book_url_pattern = re.compile(r"^/xs/\d+\/$")
     chapter_url_pattern = re.compile(r"^/xs/\d+/\d+\.html$")
+    list_mode_supported = True
 
     custom_settings = {
         "RETRY_HTTP_CODES": [500, 502, 503, 504, 408, 403, 404, 523, 520],

@@ -38,6 +38,8 @@ class GeneralSpider(Spider, ABC):
     book_url_pattern = re.compile(r"^/book/\d+/$")
     # 网站的章节详情页 URL 模式
     chapter_url_pattern = re.compile(r"^/book/\d+/chapter/\d+\.html$")
+    # 是否支持列表模式
+    list_mode_supported = False
 
     class Mode(Enum):
         """枚举类, 定义爬虫的运行模式."""
@@ -61,6 +63,10 @@ class GeneralSpider(Spider, ABC):
         if novel_url is None:
             self.start_url = f"https://{self.domain}/"
             self.mode = self.Mode.LIST
+            if not self.list_mode_supported:
+                raise ValueError(
+                    "该爬虫不支持列表模式, 请指定小说链接以启用书籍模式!",
+                )
         else:
             self.start_url = novel_url
             self.mode = self.Mode.BOOK
