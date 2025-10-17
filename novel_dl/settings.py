@@ -113,11 +113,11 @@ CONCURRENT_REQUESTS = 32
 
 
 # 下载流程控制设置
-SPIDER_MIDDLEWARES: dict = {      # 启用的爬虫中间件
+SPIDER_MIDDLEWARES: dict[str, str] = {      # 启用的爬虫中间件
 }  # 文档: https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-DOWNLOADER_MIDDLEWARES: dict = {  # 启用的下载中间件
+DOWNLOADER_MIDDLEWARES: dict[str, str] = {  # 启用的下载中间件
 }  # 文档: https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-EXTENSIONS: dict = {              # 启用的扩展
+EXTENSIONS: dict[str, str] = {              # 启用的扩展
 }  # 文档: https://docs.scrapy.org/en/latest/topics/extensions.html
 
 

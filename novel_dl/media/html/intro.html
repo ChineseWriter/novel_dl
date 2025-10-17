@@ -3,35 +3,35 @@
     <img src="../images/cover.jpg" alt="封面图片" />
   </div>
 
-  <div class="title">
-    <h1>{{ title }}</h1>
-  </div>
+  <div class="title"><h1>{{ title }}</h1></div>
+
+  <hr />
 
   <div class="basic-info">
-    <p><span class="info-title">作者:&emsp;</span>{{ author }}</p>
-    {{ update_time_str }}
+    <div class="author-field">
+      <p><span class="info-title">作者:&emsp;</span>{{ author }}</p>
+    </div>
+    <div class="desc-field">
+      <p><span class="info-title">作品简介:&emsp;</span></p>
+      {{ desc }}
+    </div>
+    <div class="tags-field">
+      <p>
+        <span class="info-title">标签:&emsp;</span>
+        {{ tags }}
+      </p>
+    </div>
   </div>
 
-  <hr />
-
-  <div class="desc-field">
-    <p><span class="info-title">描述:&emsp;</span></p>
-    {{ desc }}
-  </div>
-
-  <hr />
-
-  <div class="tags-field">
-    <p><span class="info-title">标签:&emsp;</span></p>
-    <ul class="tags">
-      {{ tags }}
-    </ul>
-  </div>
-
-  <div class="sources-field">
-    <p><span class="info-title">来源:</span></p>
-    <ul class="sources">
-      {{ sources }}
-    </ul>
+  <div class="hidden">
+    <div class="update-time">
+      <p><span class="info-title">更新时间:&emsp;</span>{{ update_time_str }}</p>
+    </div>
+    <div class="sources-field">
+      <p><span class="info-title">来源:</span></p>
+      <ul class="sources">
+        {{ sources }}
+      </ul>
+    </div>
   </div>
 </div>

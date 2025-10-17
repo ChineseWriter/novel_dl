@@ -5,7 +5,6 @@
 # @Author: Amundsen Severus Rubeus Bjaaland
 """项目的主入口, 用于启动爬虫和管理爬虫任务."""
 
-
 from pathlib import Path
 
 import fire
@@ -14,7 +13,7 @@ from ebooklib import epub
 from novel_dl.settings import DATA_DIR
 from novel_dl.utils.db_manager import DBManager
 from novel_dl.utils.epub import get_epub
-from novel_dl.utils.importer import TND
+from novel_dl.utils.importer import tnd
 
 
 class Main:
@@ -25,7 +24,7 @@ class Main:
         path = path if isinstance(path, Path) else Path(path)
         if not path.exists():
             print(f"文件 {path} 不存在.")
-        book = TND(path)
+        book = tnd(path)
         db_manager = DBManager()
         db_manager.add_book(book)
         print(f"成功导入书籍: {book.title}.")
@@ -42,10 +41,7 @@ class Main:
             return
         for book_obj in book_list:
             book = get_epub(book_obj)
-            epub.write_epub(
-                output_dir / f"{book_obj.author}-{book_obj.title}.epub",
-                book, {},
-            )
+            epub.write_epub(str(output_dir / f"{book_obj.author}-{book_obj.title}.epub"), book, {})
             print(f"成功导出: {book_obj.title}.")
 
 

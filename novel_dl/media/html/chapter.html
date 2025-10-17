@@ -3,13 +3,12 @@
     <h1>第{{ index }}章&emsp;{{ title }}</h1>
   </div>
 
-  <div class="chapter-info">
-    {{ update_time_str }}
-  </div>
-
   <div class="chapter-content">{{ content }}</div>
 
   <div class="hidden">
+    <div class="update-time">
+      <p><span class="info-title">更新时间:&emsp;</span>{{ update_time_str }}</p>
+    </div>
     <div class="sources">
       <h2>来源</h2>
       <ul class="sources">

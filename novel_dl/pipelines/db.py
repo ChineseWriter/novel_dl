@@ -33,7 +33,7 @@ class DBPipeline:
         del self.db_manager
 
     def process_item(
-        self, item: BookItem | ChapterItem, spider: GeneralSpider,
+        self, item: BookItem | ChapterItem, _: GeneralSpider,
     ) -> BookItem | ChapterItem:
         """对传入的 item 进行类型检查和保存."""
         # 判断 Item 的类型, 并依据类型进行处理

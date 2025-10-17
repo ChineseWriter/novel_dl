@@ -8,7 +8,7 @@
 
 # 导入标准库
 import yaml
-from ebooklib import epub
+from ebooklib import epub  # type: ignore[reportMissingTypeStubs]
 
 # 导入自定义库
 from novel_dl import MEDIA_DIR
@@ -43,12 +43,13 @@ def _get_intro_html(book: Book) -> str:
             ],
         ),
     ).replace(
-        "{{ update_time_str }}",
-        f'<p><span class="info-title">更新时间:&emsp;</span>{book.update_time_str}</p>'
-        if book.update_time_str else "",
+        "{{ update_time_str }}", book.update_time_str,
     ).replace(
         "{{ tags }}",
-        "".join([f"<li>{i}</li>" for i in book.tags]),
+        (
+            "".join([f'<span class="tag">{i}</span>' for i in book.tags])
+            if bool(book.tags) else "<span>None</span>"
+        ),
     ).replace(
         "{{ sources }}",
         "".join([f'<li><a href="{i}">{i}</a></li>' for i in book.sources]),
@@ -61,9 +62,7 @@ def _get_chapter_html(chapter: Chapter) -> str:
     ).replace(
         "{{ title }}", chapter.title,
     ).replace(
-        "{{ update_time_str }}",
-        f'<p><span class="info-title">更新时间:&emsp;</span>{chapter.update_time_str}</p>'
-        if chapter.update_time_str else "",
+        "{{ update_time_str }}", chapter.update_time_str,
     ).replace(
         "{{ content }}",
         "".join(
@@ -143,7 +142,6 @@ def get_epub(book: Book) -> epub.EpubBook:
     ebook.add_item(intro_e)
     # 创建目录
     spine: list[epub.EpubHtml | str] = [intro_e]
-    toc = []
     toc_buffer = []
     # 处理每一章节
     for chapter in book.chapters:
@@ -166,12 +164,13 @@ def get_epub(book: Book) -> epub.EpubBook:
         chapter_item.content = _get_chapter_html(chapter)
         ebook.add_item(chapter_item)
         # 将章节添加到目录中
-        toc.append(epub.Link(file_name, title, chapter_hash))
         toc_buffer.append(chapter_item)
         spine.append(chapter_item)
     # 合成目录
-    toc.append((epub.Section("小说章节"), tuple(toc_buffer)))
-    ebook.toc = tuple(toc)
+    ebook.toc = (
+        epub.Link("pages/intro.xhtml", "书封页", "0"*64),
+        (epub.Section("小说章节"), tuple(toc_buffer)),
+    )
     ebook.spine = spine
     # 添加导航文件
     ebook.add_item(epub.EpubNcx())

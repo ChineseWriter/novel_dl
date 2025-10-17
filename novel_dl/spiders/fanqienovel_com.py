@@ -20,12 +20,20 @@ from novel_dl.templates import BookItemLoader, GeneralSpider
 from novel_dl.templates import ChapterItemLoader as CIL
 
 
+def convert_time_str(time_str: str) -> float:
+    """将时间字符串转换为时间戳."""
+    section = time_str.split("-")
+    if len(section) != 3:
+        time_str = f"{time.strftime('%Y', time.localtime())}-{time_str}"
+    return time.mktime(time.strptime(time_str, "%Y-%m-%d"))
+
+
 class ChapterItemLoader(CIL):
     """章节信息数据加载器."""
 
     title_in = MapCompose(str.strip, lambda x: x.split(" ")[-1])
     update_time_in = MapCompose(
-        str.strip, lambda x: time.mktime(time.strptime(x, "%Y-%m-%d")), float,
+        str.strip, convert_time_str, float,
     )
 
 
@@ -36,9 +44,13 @@ class FanqieSpider(GeneralSpider):
     """
 
     name = "fanqienovel_com"
-    domain = "www.fanqienovel.com"
+    domain = "fanqienovel.com"
     book_url_pattern = re.compile(r"^/page/\d+$")
     chapter_url_pattern = re.compile(r"^/reader/\d+$")
+
+    custom_settings = {
+        "AUTOTHROTTLE_TARGET_CONCURRENCY": "0.5",
+    }
 
     def __init__(self, novel_url: str | None = None) -> None:
         """初始化爬虫实例."""

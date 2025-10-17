@@ -10,12 +10,12 @@ from io import BytesIO
 from typing import IO, TYPE_CHECKING
 
 # 导入第三方库
-from ebooklib import epub
+from ebooklib import epub  # type:ignore[reportMissingTypeStubs]
 from scrapy.exporters import BaseItemExporter
 
 # 导入自定义库
-from novel_dl.entity.items import BookItem, ChapterItem
 from novel_dl.entity.convert import item_to_book, item_to_chapter
+from novel_dl.entity.items import BookItem, ChapterItem
 from novel_dl.utils.epub import get_epub
 
 
@@ -26,15 +26,16 @@ if TYPE_CHECKING:
 class GenericExporter(BaseItemExporter):
     """通用导出器, 仅写出了收集 Item 并转换为 Book 对象的逻辑."""
 
-    def __init__(self, file: IO[bytes], **kwargs) -> None:
+    def __init__(self, file: IO[bytes]) -> None:
+        """初始化通用导出器."""
         # 初始化父类
-        super().__init__(**kwargs)
+        super().__init__()
         # 获取文件对象
         self.file = file
         # 初始化存储书籍对象的变量
         self.book: None | Book = None
         # 初始化章节缓存列表
-        self.buffer = []
+        self.buffer: list[ChapterItem] = []
 
     def start_exporting(self) -> None:
         """开始导出."""
