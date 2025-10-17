@@ -90,3 +90,7 @@ def tnd(path: Path) -> Book:
         )
     # 返回构造完成的 Book 对象
     return book_obj
+
+IMPORTERS = {
+    "tnd": tnd,
+}
