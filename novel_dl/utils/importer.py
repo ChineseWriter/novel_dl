@@ -79,7 +79,7 @@ def tnd(path: Path) -> Book:
         # 提取章节标题
         name = content.find("h1")
         if name is None: continue
-        name = " ".join(name.text.split(" ")[1:])
+        name = " ".join(name.text.split(" ")[1:]) if " " in name.text else name.text
         # 提取章节正文内容并添加至 Book 对象中
         book_obj.append(
             Chapter(
