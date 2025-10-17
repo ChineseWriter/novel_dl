@@ -76,7 +76,7 @@ class Main:
             # 导出选中的书籍
             book_obj = book_list[choice_index - 1]
             book = get_epub(book_obj)
-            book_path = output_dir / f"{book_obj.author}-{book_obj.title}.epub"
+            book_path = output_dir / f"{book_obj.author} - {book_obj.title}.epub"
             epub.write_epub(str(book_path), book, {})
             print(f"成功导出: {book_obj.title}.")
 
