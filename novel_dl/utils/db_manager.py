@@ -146,7 +146,8 @@ class DBManager:
                     ),
                 )
             # 添加书籍记录并提交更改
-            session.add(book_to_record(book))
+            book_record = book_to_record(book)
+            session.add(book_record)
             session.commit()
         # 如果当前未满的数据库已满, 则更新计数器和未满数据库路径
         if self.__is_full(self.__counter):
@@ -175,7 +176,8 @@ class DBManager:
                     session.merge(new_chapter)
                 # 如果章节不存在, 则添加新章节
                 else:
-                    session.add(chapter_to_record(chapter))
+                    chapter_record = chapter_to_record(chapter)
+                    session.add(chapter_record)
                 # 提交更改并返回成功
                 session.commit()
                 return True

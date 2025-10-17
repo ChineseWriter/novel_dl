@@ -17,3 +17,16 @@ scrapy crawl xiaxs_com -a novel_url=https://www.xiaxs.com/xs/92156/ -o output.ep
 ## 支持的网站
 
 - [笔趣阁](https://www.xiaxs.com/)
+
+## 使用的第三方库
+
+| 库名 | 用途 |
+| :-: | :-: |
+| bs4 | 解析导入其它的 epub 书籍 |
+| ebooklib | 生成和读取 epub 书籍 |
+| fire | 程序命令行 |
+| lxml | bs4 的解析后端 |
+| pillow | (封面)图片解析 |
+| pyyaml | 向 epub 中添加或读取 YAML 数据 |
+| scrapy | 下载框架 |
+| sqlalchemy | 数据库后端 |

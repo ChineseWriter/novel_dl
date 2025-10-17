@@ -66,7 +66,7 @@ def tnd(path: Path) -> Book:
     # 初始化章节对象列表
     item_list: list[epub.EpubHtml] = []
     # 遍历章节 id 列表
-    for i in spine:
+    for i in spine[1:]:
         # 依据 id 获取章节对象
         item = book.get_item_with_id(i[0])  # type: ignore[reportUnknownVariableType]
         # 确保章节对象类型正确
