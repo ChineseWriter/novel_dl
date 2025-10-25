@@ -18,6 +18,7 @@ from scrapy.http import Request, Response
 from novel_dl.entity.items import BookItem, ChapterItem
 from novel_dl.templates import BookItemLoader, GeneralSpider
 from novel_dl.templates import ChapterItemLoader as CIL
+from novel_dl.utils.str_deal import get_text_after_space
 
 
 def convert_time_str(time_str: str) -> float:
@@ -31,7 +32,7 @@ def convert_time_str(time_str: str) -> float:
 class ChapterItemLoader(CIL):
     """章节信息数据加载器."""
 
-    title_in = MapCompose(str.strip, lambda x: x.split(" ")[-1])
+    title_in = MapCompose(str.strip, get_text_after_space)
     update_time_in = MapCompose(
         str.strip, convert_time_str, float,
     )

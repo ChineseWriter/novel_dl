@@ -19,7 +19,7 @@ from novel_dl.entity.items import BookItem, ChapterItem
 from novel_dl.templates import BookItemLoader as BIL
 from novel_dl.templates import ChapterItemLoader as CIL
 from novel_dl.templates import GeneralSpider
-from novel_dl.utils.str_deal import get_text_after_colon, normalize_book_status
+from novel_dl.utils.str_deal import get_text_after_colon, get_text_after_space, normalize_book_status
 
 
 def deal_content(content: str) -> str | None:
@@ -74,7 +74,7 @@ class ChapterItemLoader(CIL):
     title_in       = MapCompose(
         str.strip,
         lambda x: x.split("-")[0],
-        lambda x: x.split(" ")[-1],
+        get_text_after_space,
         lambda x: "、".join(x.split("、")[1:]) if "章、" in x else x,
     )
     content_in     = MapCompose(str.strip, deal_content)

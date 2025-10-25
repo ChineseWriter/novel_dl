@@ -20,6 +20,13 @@ def get_text_after_colon(text: str) -> str:
     return text
 
 
+def get_text_after_space(text: str) -> str:
+    """获取第一个空格后面的文本."""
+    if " " in text:
+        return " ".join(text.split(" ")[1:])
+    return text
+
+
 def normalize_book_status(status: str) -> str:
     """规范化书籍状态文本."""
     if status in END:         return "完结"
