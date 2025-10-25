@@ -57,6 +57,7 @@ def tnd(path: Path) -> Book:
     desc = str(intro_page.find_all("p")[-1])[3:-4].replace(
         "<br/>", "\n",
     ).replace("\n\n", "\n").replace("\n\n", "\n")
+    desc = "\t" + desc.replace("\n", "\n\t")
     # 构造 Book 对象
     book_obj = Book(title, author, state, desc, [], [], {})  # type: ignore[reportUnknownVariableType]
     # 向 Book 对象中添加封面

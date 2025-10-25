@@ -7,6 +7,7 @@
 
 
 # 导入标准库
+import copy
 import threading
 from functools import reduce
 from pathlib import Path
@@ -153,8 +154,11 @@ class DBManager:
                     book_hash = hash_(book),
                 ))
             # 添加书籍记录并提交更改
+            # TODO 这里存在一个恶性 BUG:
+            # 即如果直接添加书籍, 有概率会导致章节的主键碰撞, 但事实上并不存在碰撞的一对主键
+            # 现将 add 方法改为 merge
             book_record = book_to_record(book)
-            session.add(book_record)
+            session.merge(book_record)
             session.commit()
         # 如果当前未满的数据库已满, 则更新计数器和未满数据库路径
         if self.__is_full(self.__counter):
